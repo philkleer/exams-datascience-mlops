@@ -12,7 +12,9 @@ def authentication_test(username, password, expected_status):
     status_code = response.status_code
 
     # display the results
-    test_status = "SUCCESS" if str(status_code) == expected_status else "FAILURE"
+    test_status = (
+        "SUCCESS" if str(status_code) == expected_status else "FAILURE"
+    )
 
     output = f"""
 
