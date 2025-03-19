@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-api
+  labels:
+    app: user-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: user-api
+  template:
+    metadata:
+      labels:
+        app: user-api
+    spec:
+      containers:
+      - name: mysql-database
+        image: datascientest/mysql-k8s:1.0.0
+        ports:
+        - containerPort: 3306 # from the files on dockerhub the image exposes 3306
+      - name: fastapi
+        image: philippkleer/kubernetes_exam:latest
+        env:
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db
+                key: db-password
+        ports:
+          - containerPort: 8000

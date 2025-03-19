@@ -1,0 +1,39 @@
+stages:
+  split:
+    cmd: python src/data/01-data-splitting.py
+    deps:
+    - data/raw_data
+    - src/data/01-data-splitting.py
+    outs:
+    - data/processed_data/splitted
+  normalize:
+    cmd: python src/data/02-data-normalization.py
+    deps:
+    - data/processed_data/splitted
+    - src/data/02-data-normalization.py
+    outs:
+    - data/processed_data/normalized
+  gridsearch:
+    cmd: python src/models/01-grid-search.py
+    deps:
+    - data/processed_data
+    - src/models/01-grid-search.py
+    outs:
+    - models/best_params.pkl
+  training:
+    cmd: python src/models/02-training.py
+    deps:
+    - models/best_params.pkl
+    - src/models/02-training.py
+    outs:
+    - models/trained_model.pkl
+  evaluation:
+    cmd: python src/models/03-evaluation.py
+    deps:
+    - models/trained_model.pkl
+    - src/models/03-evaluation.py
+    outs:
+    - data/predictions.csv
+    metrics:
+    - metrics/scores.json:
+        cache: false

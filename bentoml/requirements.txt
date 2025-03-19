@@ -1,0 +1,9 @@
+requests
+numpy
+pandas
+scikit-learn
+bentoml
+pydantic
+starlette
+pyjwt
+datetime

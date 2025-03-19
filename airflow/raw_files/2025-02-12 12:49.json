@@ -1,0 +1,136 @@
+[
+    {
+        "coord": {
+            "lon": -34.8811,
+            "lat": -8.0539
+        },
+        "weather": [
+            {
+                "id": 803,
+                "main": "Clouds",
+                "description": "broken clouds",
+                "icon": "04d"
+            }
+        ],
+        "base": "stations",
+        "main": {
+            "temp": 302.17,
+            "feels_like": 306.69,
+            "temp_min": 302.17,
+            "temp_max": 302.17,
+            "pressure": 1013,
+            "humidity": 74,
+            "sea_level": 1013,
+            "grnd_level": 1010
+        },
+        "visibility": 10000,
+        "wind": {
+            "speed": 5.66,
+            "deg": 140
+        },
+        "clouds": {
+            "all": 75
+        },
+        "dt": 1739364569,
+        "sys": {
+            "type": 1,
+            "id": 8426,
+            "country": "BR",
+            "sunrise": 1739348553,
+            "sunset": 1739393109
+        },
+        "timezone": -10800,
+        "id": 3390760,
+        "name": "Recife",
+        "cod": 200
+    },
+    {
+        "coord": {
+            "lon": -88.9167,
+            "lat": 13.8333
+        },
+        "weather": [
+            {
+                "id": 800,
+                "main": "Clear",
+                "description": "clear sky",
+                "icon": "01d"
+            }
+        ],
+        "base": "stations",
+        "main": {
+            "temp": 293.41,
+            "feels_like": 293.48,
+            "temp_min": 293.41,
+            "temp_max": 293.41,
+            "pressure": 1012,
+            "humidity": 76,
+            "sea_level": 1012,
+            "grnd_level": 952
+        },
+        "visibility": 10000,
+        "wind": {
+            "speed": 0.13,
+            "deg": 356,
+            "gust": 0.18
+        },
+        "clouds": {
+            "all": 0
+        },
+        "dt": 1739364090,
+        "sys": {
+            "country": "SV",
+            "sunrise": 1739362804,
+            "sunset": 1739404794
+        },
+        "timezone": -21600,
+        "id": 3585968,
+        "name": "El Salvador",
+        "cod": 200
+    },
+    {
+        "coord": {
+            "lon": -35.2094,
+            "lat": -5.795
+        },
+        "weather": [
+            {
+                "id": 803,
+                "main": "Clouds",
+                "description": "broken clouds",
+                "icon": "04d"
+            }
+        ],
+        "base": "stations",
+        "main": {
+            "temp": 301.27,
+            "feels_like": 304.62,
+            "temp_min": 298.51,
+            "temp_max": 301.27,
+            "pressure": 1012,
+            "humidity": 74,
+            "sea_level": 1012,
+            "grnd_level": 1009
+        },
+        "visibility": 10000,
+        "wind": {
+            "speed": 10.8,
+            "deg": 70
+        },
+        "clouds": {
+            "all": 75
+        },
+        "dt": 1739364798,
+        "sys": {
+            "type": 1,
+            "id": 8417,
+            "country": "BR",
+            "sunrise": 1739348766,
+            "sunset": 1739393053
+        },
+        "timezone": -10800,
+        "id": 3394023,
+        "name": "Natal",
+        "cod": 200
+    }
+]

@@ -1,0 +1,9 @@
+# external requirements
+click
+logging
+pandas
+numpy 
+pathlib 
+scikit-learn
+joblib
+boto3<1.36.0

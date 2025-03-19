@@ -1,0 +1,19 @@
+service: 'src.service:your_future'
+labels:
+  owner: 'Philipp Kleer'
+  project: 'Can you enter or not?'
+  description: 'Predict the chance of admission of a student in a university'
+include:
+  - src/
+  - data/
+python:
+  packages:
+    - scikit-learn
+    - pandas
+    - requests
+    - numpy
+    - pydantic
+    - starlette
+    - pyjwt
+    - datetime
+    - pytest

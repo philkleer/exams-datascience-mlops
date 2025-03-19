@@ -1,0 +1,90 @@
+services:
+  api:
+    image: datascientest/fastapi:1.0.0
+    container_name: api
+    ports:
+      - "8000:8000"
+    networks:
+      - test_network
+  authentication_test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authentication_test
+    environment:
+      - USER1=alice
+      - PASS1=wonderland
+      - RESULT1=200
+      - USER2=bob
+      - PASS2=builder
+      - RESULT2=200
+      - USER3=clementine
+      - PASS3=mandarine
+      - RESULT3=403
+      - LOG=1
+    volumes:
+      - shared_logs:/logs
+    depends_on:
+      - api
+    networks: 
+      - test_network
+    command: ["python", "tests/authentication_test.py"]
+
+  authorization_test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: authorization_test
+    environment:
+      - USER1=alice
+      - PASS1=wonderland
+      - USER2=bob
+      - PASS2=builder
+      - AREA1=/v1/sentiment
+      - AREA2=/v2/sentiment
+      - RESULT1=200
+      - RESULT2=200
+      - RESULT3=200
+      - RESULT4=403
+      - LOG=1
+    volumes:
+      - shared_logs:/logs
+    depends_on:
+      - api
+    networks: 
+      - test_network
+    command: ["python", "tests/authorization_test.py"]
+
+  content_test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: content_test
+    environment:
+      - CONTENT1=life is beautiful
+      - CONTENT2=that sucks
+      - ACCESS1=/v1/sentiment
+      - ACCESS2=/v2/sentiment
+      - SENTENCE1=life is beautiful
+      - SENTENCE2=that sucks
+      - RESULT1=1
+      - RESULT2=-1
+      - LOG=1
+    volumes:
+      - shared_logs:/logs
+    depends_on:
+      - api
+    networks: 
+      - test_network
+    command: ["python", "tests/content_test.py"]
+
+networks:
+  test_network:
+
+volumes:
+  shared_logs:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./shared_logs
+      o: bind
