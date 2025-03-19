@@ -12,10 +12,11 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import cross_val_score
 from datetime import datetime, timedelta, timezone
+
 UTC = timezone.utc
 import pandas as pd
 import logging
-import requests 
+import requests
 import json
 import os
 from joblib import dump
@@ -27,8 +28,9 @@ from io import StringIO
 #                                                    #
 ######################################################
 
+
 def create_weather_data(parent_folder, n_files=None):
-    '''
+    """
     Imports the data json (fetch_data()) and creates from specified variables
     a DataFrame and returns the DataFrame
 
@@ -42,7 +44,7 @@ def create_weather_data(parent_folder, n_files=None):
 
     Returns:
     - pd.DataFrame: A DataFrame with columns ['temperature', 'city', 'pressure', 'date'].
-    '''
+    """
 
     # search in origin folder for files
     files = sorted(os.listdir(parent_folder), reverse=True)
@@ -54,15 +56,15 @@ def create_weather_data(parent_folder, n_files=None):
 
     # loop through the files
     for f in files:
-        with open(os.path.join(parent_folder, f), 'r') as file:
+        with open(os.path.join(parent_folder, f), "r") as file:
             data_temp = json.load(file)
         for data_city in data_temp:
             dfs.append(
                 {
-                    'temperature': data_city['main']['temp'],
-                    'city': data_city['name'],
-                    'pressure': data_city['main']['pressure'],
-                    'date': f.split('.')[0]
+                    "temperature": data_city["main"]["temp"],
+                    "city": data_city["name"],
+                    "pressure": data_city["main"]["pressure"],
+                    "date": f.split(".")[0],
                 }
             )
 
@@ -70,8 +72,9 @@ def create_weather_data(parent_folder, n_files=None):
 
     return df
 
+
 def save_file(df, output_path):
-    '''
+    """
     Saves a DataFrame as a CSV file to the specified output path.
 
     - ensures existing folder before saving (creating it)
@@ -84,16 +87,17 @@ def save_file(df, output_path):
 
     Returns:
     - None
-    '''
+    """
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     df.to_csv(output_path, index=False)
-    
-    logging.info(f'Saved CSV: {output_path}')
 
-def prepare_data(path_to_data='/app/clean_data/fulldata.csv'):
-    ''' Preparing data
+    logging.info(f"Saved CSV: {output_path}")
+
+
+def prepare_data(path_to_data="/app/clean_data/fulldata.csv"):
+    """Preparing data
 
     This function prepares the data for modelling by creating target and features.
 
@@ -108,52 +112,48 @@ def prepare_data(path_to_data='/app/clean_data/fulldata.csv'):
     Returns:
     - features (pd.DataFrame): DataFrame containing lagged temperature values and city dummies
     - target (pd.Series): Series representing the previous day's temperature
-    '''
+    """
     # reading data
     df = pd.read_csv(path_to_data)
     # ordering data according to city and date
-    df = df.sort_values(['city', 'date'], ascending=True)
+    df = df.sort_values(["city", "date"], ascending=True)
 
     dfs = []
 
-    for c in df['city'].unique():
-        df_temp = df[df['city'] == c].copy()
+    for c in df["city"].unique():
+        df_temp = df[df["city"] == c].copy()
 
         # creating target (previous temperature)
-        df_temp.loc[:, 'target'] = df_temp['temperature'].shift(1)
+        df_temp.loc[:, "target"] = df_temp["temperature"].shift(1)
 
         # creating features lag vars
         for i in range(1, 10):
-            df_temp.loc[:, f'temp_m-{i}'] = df_temp['temperature'].shift(-i)
+            df_temp.loc[:, f"temp_m-{i}"] = df_temp["temperature"].shift(-i)
 
         # deleting null values
         df_temp = df_temp.dropna()
 
         dfs.append(df_temp)
 
-    # concatenating datasets 
-    df_final = pd.concat(
-        dfs,
-        axis=0,
-        ignore_index=False
-    )
+    # concatenating datasets
+    df_final = pd.concat(dfs, axis=0, ignore_index=False)
 
     # deleting date variable
-    df_final = df_final.drop(['date'], axis=1)
+    df_final = df_final.drop(["date"], axis=1)
 
     # creating dummies for city variable
     df_final = pd.get_dummies(df_final)
 
-    features = df_final.drop(['target'], axis=1)
-    target = df_final['target']
+    features = df_final.drop(["target"], axis=1)
+    target = df_final["target"]
 
-
-    logging.info(f'Features shape: {features.shape}')
-    logging.info(f'Target shape: {target.shape}')
+    logging.info(f"Features shape: {features.shape}")
+    logging.info(f"Target shape: {target.shape}")
     return features, target
 
+
 def compute_model_score(model, X, y):
-    '''
+    """
     This function runs cross-validation on a specified model and returns its performance score.
 
     - uses a 3-fold cross-validation
@@ -167,21 +167,19 @@ def compute_model_score(model, X, y):
 
     Returns:
     - model_score (float): ean negative mean squared error (MSE) across folds. Note: The returned value is negative; a higher value is better.
-'''
+    """
     # computing cross val
     cross_validation = cross_val_score(
-        model,
-        X,
-        y,
-        cv=3,
-        scoring='neg_mean_squared_error')
+        model, X, y, cv=3, scoring="neg_mean_squared_error"
+    )
 
     model_score = cross_validation.mean()
 
     return model_score
 
+
 def train_and_save_model(model, X, y, path_to_model):
-    '''
+    """
     This function trains a scikit-learn model on the provided data and saves it to the specified path.
 
     Arguments:
@@ -193,23 +191,28 @@ def train_and_save_model(model, X, y, path_to_model):
     Returns:
     - None
 
-    '''
+    """
     # training the model
     model.fit(X, y)
     # saving model
-    logging.info(f'{str(model)} saved at {path_to_model}')
+    logging.info(f"{str(model)} saved at {path_to_model}")
     dump(model, path_to_model)
 
+
 def time_check():
-    first_run_timestamp_str = Variable.get('first_run_timestamp', default_var=None)
+    first_run_timestamp_str = Variable.get("first_run_timestamp", default_var=None)
 
     if first_run_timestamp_str is None:
         first_run_timestamp = datetime.now()
-        Variable.set('first_run_timestamp', first_run_timestamp.strftime('%Y-%m-%d %H:%M:%S'))
-        
+        Variable.set(
+            "first_run_timestamp", first_run_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        )
+
         return False
-       
-    first_run_timestamp = datetime.strptime(first_run_timestamp_str, '%Y-%m-%d %H:%M:%S')
+
+    first_run_timestamp = datetime.strptime(
+        first_run_timestamp_str, "%Y-%m-%d %H:%M:%S"
+    )
 
     time_elapsed = datetime.now() - first_run_timestamp
 
@@ -218,13 +221,16 @@ def time_check():
     else:
         return False
 
+
 ######################################################
 #                                                    #
 #             Functions as tasks                     #
 #                                                    #
 ######################################################
 
-@task(doc='''# Fetch weather data from API
+
+@task(
+    doc="""# Fetch weather data from API
     
     This task fetches weather data from open weather map API from predefined cities and saves the data as a JSON file. Logs success or failure messages for each API request.
 
@@ -239,20 +245,24 @@ def time_check():
 
     Returns:
     - None
-    ''')
+    """
+)
 def fetch_data():
-
     # input: airflow variables
-    api_key = Variable.get('openweathermap_api_key', default_var='your_default_key')
+    api_key = Variable.get("openweathermap_api_key", default_var="your_default_key")
     # get cities
-    cities = Variable.get('weather_cities', default_var='recife,brasilia,natal').split(',')
+    cities = Variable.get("weather_cities", default_var="recife,brasilia,natal").split(
+        ","
+    )
 
     weather_data = []
     timestamp = None
 
     # Loop over cities and fetch weather data
     for city in cities:
-        url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}'
+        url = (
+            f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
+        )
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -261,34 +271,42 @@ def fetch_data():
             weather_data.append(city_data)
 
             # extract timestamp
-            if timestamp is None: 
-                timestamp = city_data['dt']
-        
-                logging.info(f'Data for {city} received!')
+            if timestamp is None:
+                timestamp = city_data["dt"]
+
+                logging.info(f"Data for {city} received!")
         else:
-            logging.info(f'Error fetching data for {city}: {response.status_code}, {response.text}')
+            logging.info(
+                f"Error fetching data for {city}: {response.status_code}, {response.text}"
+            )
 
     # test directory
-    output_dir='/app/raw_files/'
+    output_dir = "/app/raw_files/"
     # create if not already there
     os.makedirs(output_dir, exist_ok=True)
 
     # convert timestamp to str
     if timestamp:
-        formatted_time = datetime.fromtimestamp(timestamp, UTC).strftime('%Y-%m-%d %H:%M')
+        formatted_time = datetime.fromtimestamp(timestamp, UTC).strftime(
+            "%Y-%m-%d %H:%M"
+        )
 
         # create filename
-        filename = os.path.join(output_dir, f'{formatted_time}.json')
+        filename = os.path.join(output_dir, f"{formatted_time}.json")
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(weather_data, f, ensure_ascii=False, indent=4)
 
-        logging.info(f'The data of the three cities has been saved to {filename}! :-) (Task 1)')
-    else: 
-        logging.info('No valid data retrieved. File was not created :-(. (Task 1)')
+        logging.info(
+            f"The data of the three cities has been saved to {filename}! :-) (Task 1)"
+        )
+    else:
+        logging.info("No valid data retrieved. File was not created :-(. (Task 1)")
+
 
 # verifications
-@task(doc=''' # File Verification
+@task(
+    doc=""" # File Verification
 
     Checks if the specified file exists before proceeding with downstream tasks.
 
@@ -302,21 +320,22 @@ def fetch_data():
 
     Returns:
     - bool: True if the file is detected within the timeout period.
-''')
+"""
+)
 def verify_file_exists(name_task, filepath):
     # here I add initially some issues therefore, I have more logging.
     logger = logging.getLogger(name_task)
-    
+
     logger.info(f"Starting to check if file {filepath} exists.")
-    
+
     file_sensor = FileSensor(
         task_id=name_task,
         filepath=filepath,
-        poke_interval=60,  
-        timeout=600, 
-        mode='reschedule'
+        poke_interval=60,
+        timeout=600,
+        mode="reschedule",
     )
-    
+
     try:
         file_sensor.execute(context={})  # Airflow will handle retries internally
         logger.info(f"File {filepath} detected successfully.")
@@ -325,7 +344,9 @@ def verify_file_exists(name_task, filepath):
         logger.error(f"Failed to detect file {filepath}: {str(e)}")
         return False
 
-@task(doc='''# Save latest weather data
+
+@task(
+    doc="""# Save latest weather data
     This task imports the weather data and selects the latest 20 files to create a data set of these. It saves the data file in `/app/clean_data/data.csv`.
     
     Arguments:
@@ -333,23 +354,28 @@ def verify_file_exists(name_task, filepath):
 
     Returns:
     - None
-    ''')
+    """
+)
 def latest_weather_data():
-    df = create_weather_data('/app/raw_files', n_files=20)
-    save_file(df, '/app/clean_data/data.csv')
-    logging.info('Saved dataset as `/app/clean_data/data.csv` (Task 2)!')
+    df = create_weather_data("/app/raw_files", n_files=20)
+    save_file(df, "/app/clean_data/data.csv")
+    logging.info("Saved dataset as `/app/clean_data/data.csv` (Task 2)!")
 
-@task(doc='''# Save full weather data
+
+@task(
+    doc="""# Save full weather data
     
     This task imports the weather data and creates a data set of the full data. It saves the data file in `/app/clean_data/fulldata.csv`.
-''')
+"""
+)
 def full_weather_data():
-    df = create_weather_data('/app/raw_files')
-    save_file(df, '/app/clean_data/fulldata.csv')
-    logging.info('Saved dataset as `/app/clean_data/fulldata.csv` (Task 3)!')
+    df = create_weather_data("/app/raw_files")
+    save_file(df, "/app/clean_data/fulldata.csv")
+    logging.info("Saved dataset as `/app/clean_data/fulldata.csv` (Task 3)!")
 
 
-@task(doc=''' # Loads and prepares weather data
+@task(
+    doc=""" # Loads and prepares weather data
 
     This task uses the function `prepare_data()` to create feature matrix and target for the modelling.
 
@@ -363,17 +389,20 @@ def full_weather_data():
     Returns:
     - X (pd.DataFrame): Feature matrix containing lagged temperature values and one-hot encoded city variables.
     - y (pd.Series): Target variable representing the previous day's temperature.
-''')
-def load_data(path='/app/clean_data/fulldata.csv'):
+"""
+)
+def load_data(path="/app/clean_data/fulldata.csv"):
     X, y = prepare_data(path)
 
     # making X and y serializable (CSV strings)
     csv_X = X.to_csv(index=False)
     csv_y = y.to_csv(index=False)
 
-    return {'X': csv_X, 'y': csv_y}
+    return {"X": csv_X, "y": csv_y}
 
-@task(doc=''' # Evaluates and saves scores
+
+@task(
+    doc=""" # Evaluates and saves scores
 
     This task compute the model (`compute_model_score()`) and saves the score with xcom. 
 
@@ -382,20 +411,22 @@ def load_data(path='/app/clean_data/fulldata.csv'):
     - gets the model name
     - pushes the score in a dictionary with model name with xcom
     - logs the validation score
-''')
-def evaluate_model(model, Xcom_data): #, ti, X, y
-    
+"""
+)
+def evaluate_model(model, Xcom_data):  # , ti, X, y
     # load data
-    X = pd.read_csv(StringIO(Xcom_data['X']))
-    y = pd.read_csv(StringIO(Xcom_data['y'])).squeeze()
-   
+    X = pd.read_csv(StringIO(Xcom_data["X"]))
+    y = pd.read_csv(StringIO(Xcom_data["y"])).squeeze()
+
     score = compute_model_score(model, X, y)
-    model_name = model.__class__.__name__ 
+    model_name = model.__class__.__name__
     # ti.xcom_ush(key=model_name, value=score)
-    logging.info(f'{model_name} cross-validation score: {score}')
+    logging.info(f"{model_name} cross-validation score: {score}")
     return score
 
-@task(doc=''' # Comparing scores
+
+@task(
+    doc=""" # Comparing scores
     This task compares the model performance scores and selects the best model based on the highest score.
 
     - Retrieves the scores for each model from XComs.
@@ -412,26 +443,30 @@ def evaluate_model(model, Xcom_data): #, ti, X, y
     Returns:
     - None
 
-''')
-def select_best_model(Xcom_data, task4a, task4b, task4c): #, ti
+"""
+)
+def select_best_model(Xcom_data, task4a, task4b, task4c):  # , ti
     scores = {
-        'LinearRegression': task4a,
-        'DecisionTreeRegressor': task4b, 
-        'RandomForestRegressor': task4c
+        "LinearRegression": task4a,
+        "DecisionTreeRegressor": task4b,
+        "RandomForestRegressor": task4c,
     }
 
     best_model_name = max(scores, key=scores.get)
     best_model = {
-        'LinearRegression': LinearRegression, 
-        'DecisionTreeRegressor': DecisionTreeRegressor, 
-        'RandomForestRegressor': RandomForestRegressor
-        }
+        "LinearRegression": LinearRegression,
+        "DecisionTreeRegressor": DecisionTreeRegressor,
+        "RandomForestRegressor": RandomForestRegressor,
+    }
 
     # load data
-    X = pd.read_csv(StringIO(Xcom_data['X']))
-    y = pd.read_csv(StringIO(Xcom_data['y'])).squeeze()    
-    train_and_save_model(best_model[best_model_name](), X, y, '/app/clean_data/best_model.pickle')
-    logging.info(f'Best model: {best_model_name}. Data was retrained and saved!')
+    X = pd.read_csv(StringIO(Xcom_data["X"]))
+    y = pd.read_csv(StringIO(Xcom_data["y"])).squeeze()
+    train_and_save_model(
+        best_model[best_model_name](), X, y, "/app/clean_data/best_model.pickle"
+    )
+    logging.info(f"Best model: {best_model_name}. Data was retrained and saved!")
+
 
 ######################################################
 #                                                    #
@@ -441,24 +476,24 @@ def select_best_model(Xcom_data, task4a, task4b, task4c): #, ti
 
 # Default arguments for DAG tasks
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2025, 2, 12),  # Static start date
-    'retries': 3,
-    'retry_delay': timedelta(minutes=5),
+    "owner": "airflow",
+    "depends_on_past": False,
+    "start_date": datetime(2025, 2, 12),  # Static start date
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
 }
+
 
 # Define the DAG
 @dag(
-    dag_id='weather_pipeline',
+    dag_id="weather_pipeline",
     default_args=default_args,
-    schedule_interval='*/1 * * * *',  # Runs every minute
+    schedule_interval="*/1 * * * *",  # Runs every minute
     catchup=False,
-    tags=['weather_pipeline', 'airflow_exam']
+    tags=["weather_pipeline", "airflow_exam"],
 )
 def weather_pipeline():
-    
-    # Task 1: fetching data 
+    # Task 1: fetching data
     task1 = fetch_data()
 
     # Time checking to fetch enough data
@@ -466,9 +501,7 @@ def weather_pipeline():
 
     # Circuit Operator
     check_time = ShortCircuitOperator(
-        task_id='branch_check',
-        python_callable=time_check,
-        provide_context=True
+        task_id="branch_check", python_callable=time_check, provide_context=True
     )
 
     # Task 2: creating data sets
@@ -476,26 +509,30 @@ def weather_pipeline():
     task3 = full_weather_data()
 
     # verification step
-    with TaskGroup('verification_group', tooltip='Verify file existence') as verification_group:
-        verify_task2 = verify_file_exists('task2', '/app/clean_data/data.csv')
-        verify_task3 = verify_file_exists('task3', '/app/clean_data/fulldata.csv')
-
+    with TaskGroup(
+        "verification_group", tooltip="Verify file existence"
+    ) as verification_group:
+        verify_task2 = verify_file_exists("task2", "/app/clean_data/data.csv")
+        verify_task3 = verify_file_exists("task3", "/app/clean_data/fulldata.csv")
 
     # preliminary step: load_data
-    load_task4 = load_data('/app/clean_data/fulldata.csv')
+    load_task4 = load_data("/app/clean_data/fulldata.csv")
     # Task 4: Task group with three different models
-    with TaskGroup('model_evaluation', tooltip='Evaluate different models') as model_group: 
+    with TaskGroup(
+        "model_evaluation", tooltip="Evaluate different models"
+    ) as model_group:
         task4a = evaluate_model(LinearRegression(), load_task4)
         task4b = evaluate_model(DecisionTreeRegressor(), load_task4)
         task4c = evaluate_model(RandomForestRegressor(), load_task4)
-    
+
     # Task 5: creating full model
-    task5 = select_best_model(load_task4, task4a, task4b, task4c)     
+    task5 = select_best_model(load_task4, task4a, task4b, task4c)
 
     # Setting task dependencies
     task1 >> check_time >> [task2, task3] >> verification_group
     [verification_group] >> load_task4 >> model_group
     model_group >> task5
+
 
 # Initiliazing
 weather_pipeline_dag = weather_pipeline()

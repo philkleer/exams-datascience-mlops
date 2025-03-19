@@ -12,7 +12,7 @@
 
 import pandas as pd
 
-df = pd.read_csv('trump.csv', sep='|')
+df = pd.read_csv("trump.csv", sep="|")
 
 df.head(10)
 
@@ -20,12 +20,12 @@ df.head(10)
 # Take care, during the examination, not to display the global content of the speeches variable as this may take several minutes.
 speeches = ""
 for item in df.Speech:
-    speeches += item + ' '
+    speeches += item + " "
 
 # In the text, the audience reactions are indicated by square brackets, [Applause] for example.
 
 # (d) Create a test variable containing the string: Hello World! [Applause] How are you ?.
-test = 'Hello World! [Applause] How are you?'
+test = "Hello World! [Applause] How are you?"
 
 # (e) Using the re library, create a function named remove_brackets which takes as input a string and replaces the words in square brackets with spaces.
 
@@ -33,10 +33,12 @@ test = 'Hello World! [Applause] How are you?'
 
 import re
 
-def remove_brackets(string):    
+
+def remove_brackets(string):
     r = re.compile(r"\s?\[.*?\]\s?")
-    new_string = r.sub(' ', string)
+    new_string = r.sub(" ", string)
     return new_string
+
 
 remove_brackets(test)
 
@@ -50,9 +52,28 @@ speeches_rm = remove_brackets(speeches)
 
 from nltk.corpus import stopwords
 
-stop_words = set(stopwords.words('english'))
+stop_words = set(stopwords.words("english"))
 
-new_stop_words = ["?", "!", ".", ",", ":", ";", "-", "--", "...", "\"", "'", "they've", "they're", "they'll", "i've", "i'm", "i'll", "could"]
+new_stop_words = [
+    "?",
+    "!",
+    ".",
+    ",",
+    ":",
+    ";",
+    "-",
+    "--",
+    "...",
+    '"',
+    "'",
+    "they've",
+    "they're",
+    "they'll",
+    "i've",
+    "i'm",
+    "i'll",
+    "could",
+]
 
 stop_words.update(new_stop_words)
 
@@ -73,13 +94,15 @@ tokens = tokenizer.tokenize(speeches)
 # (k) Display the total number of words as well as the number of different words found in these speeches.
 len(set(tokens))
 
+
 # (l) Remove all stop words from the tokens list.
-def stop_words_filtering(words) : 
+def stop_words_filtering(words):
     tokens = []
     for word in words:
         if word not in stop_words:
             tokens.append(word)
     return tokens
+
 
 tokens = stop_words_filtering(tokens)
 
@@ -110,19 +133,19 @@ import numpy as np
 mask = np.array(Image.open("trump.jpg"))
 
 wc = WordCloud(
-    background_color="white", 
-    max_words=1000, 
-    max_font_size=90, 
+    background_color="white",
+    max_words=1000,
+    max_font_size=90,
     collocations=False,
     mask=mask,
-    random_state=42
+    random_state=42,
 )
 # above i did create an array of tokens instead of a single string that is needed for the word cloud
 
 tokens2 = ""
 
 for token in tokens:
-    tokens2 += token + ' '
+    tokens2 += token + " "
 
 # We want to customize the wordcloud, in particular to change the colours of the text, so that it automatically takes the colours of the original image.
 
@@ -137,14 +160,14 @@ for token in tokens:
 
 # (h) Display the wordcloud again.
 from wordcloud import ImageColorGenerator
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 img_color = ImageColorGenerator(mask)
 
-plt.figure(figsize= (10,5))
+plt.figure(figsize=(10, 5))
 wc.generate(tokens2)
 wc.recolor(color_func=img_color)
-plt.imshow(wc, interpolation='bilinear')
+plt.imshow(wc, interpolation="bilinear")
 plt.show()
 
 # 3. Sentiment analysis
@@ -162,7 +185,9 @@ from sklearn.model_selection import train_test_split
 X = df.Speech
 y = df.Sentiment
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=7786)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=7786
+)
 
 # The second step is vectorization, which consists of converting each paragraph of the various speeches into a numerical representation. This involves creating a corpus and a term-document matrix.
 
@@ -204,17 +229,21 @@ y_pred_gbc = gbc.predict(X_test)
 accuracy_dt = accuracy_score(y_test, y_pred_dt)
 accuracy_gbc = accuracy_score(y_test, y_pred_gbc)
 
-print(f'Decision Tree Accuracy: {accuracy_dt:.4f}')
-print(f'Gradien Boosting Accuracy: {accuracy_gbc:.4f}')
+print(f"Decision Tree Accuracy: {accuracy_dt:.4f}")
+print(f"Gradien Boosting Accuracy: {accuracy_gbc:.4f}")
 
 # (j) Display the confusion matrices of these two algorithms on the test set. Which sentiment is difficult to detect ?
-confusion_matrix_dt = pd.crosstab(y_test, y_pred_dt, rownames=['Actual class'], colnames=['Predicted class'])
-confusion_matrix_gbc = pd.crosstab(y_test, y_pred_gbc, rownames=['Actual class'], colnames=['Predicted class'])
+confusion_matrix_dt = pd.crosstab(
+    y_test, y_pred_dt, rownames=["Actual class"], colnames=["Predicted class"]
+)
+confusion_matrix_gbc = pd.crosstab(
+    y_test, y_pred_gbc, rownames=["Actual class"], colnames=["Predicted class"]
+)
 
-print('#'*10, ' Decision Tree ', '#'*10, '\n')
-print(confusion_matrix_dt, end='\n\n\n')
-print('#'*10, ' Gradient Boosting ', '#'*10, '\n')
-print(confusion_matrix_gbc, end='\n\n\n')
+print("#" * 10, " Decision Tree ", "#" * 10, "\n")
+print(confusion_matrix_dt, end="\n\n\n")
+print("#" * 10, " Gradient Boosting ", "#" * 10, "\n")
+print(confusion_matrix_gbc, end="\n\n\n")
 
 # In both cases the one neutral tweet was not correctly assigned to neutral (DT: negative; GBC: positive)
 # DT has also problems detecting negative and positive cases correctly, putting more or less

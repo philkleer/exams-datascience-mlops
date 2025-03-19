@@ -20,10 +20,11 @@ from sklearn.metrics import mean_squared_error
 from tqdm.notebook import *
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 # (b) Read the house_price.csv in a Dataframe called hp. Pay attention to the index column.
-hp = pd.read_csv('house_price.csv', index_col='Id')
+hp = pd.read_csv("house_price.csv", index_col="Id")
 
 hp.head(20)
 
@@ -52,7 +53,11 @@ hp = hp.loc[:, missing_perc <= 80]
 hp.head()
 
 # (e) For each numerical variable, replace the missing values with the mean of the variable.
-hp = hp.apply(lambda col: col.fillna(col.mean()) if col.dtype == 'int64' or col.dtype == 'float64' else col)
+hp = hp.apply(
+    lambda col: col.fillna(col.mean())
+    if col.dtype == "int64" or col.dtype == "float64"
+    else col
+)
 
 # (f) Transform each categorical variable into binary variables.
 # it transforms the categorical variables of the dataset into dummies, keeping all
@@ -62,11 +67,13 @@ hp = pd.get_dummies(hp)
 hp.head()
 
 # (g) Create an object y containing the target variable SalePrice and an object X containing the rest of the variables.
-y = hp['SalePrice']
-X = hp.drop(columns='SalePrice', axis=1)
+y = hp["SalePrice"]
+X = hp.drop(columns="SalePrice", axis=1)
 
 # (h) Separate the data into a training set (X_train, y_train) and a test set (X_test, y_test), with 30% of the original data for the test set. Add random_state=42 to the train_test_split function to ensure reproducible results.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
 
 # (i) Define X_train_scaled and X_test_scaled by standardizing X_train and X_test using a well-known scikit-learn object.
 scaler = StandardScaler()
@@ -79,15 +86,15 @@ lr = LinearRegression()
 
 lr.fit(X_train_scaled, y_train)
 
-print('R2 Train data: ', lr.score(X_train_scaled, y_train))
-print('R2 Test data: ', lr.score(X_test_scaled, y_test))
+print("R2 Train data: ", lr.score(X_train_scaled, y_train))
+print("R2 Test data: ", lr.score(X_test_scaled, y_test))
 
 # (k) Calculate the root of the mean square error of this model on the standardized train and test data. Interpret the result.
 y_pred_train = lr.predict(X_train_scaled)
 y_pred_test = lr.predict(X_test_scaled)
 
-print('MSE Train data: ', mean_squared_error(y_train, y_pred_train))
-print('MSE Test data: ', mean_squared_error(y_test, y_pred_test))
+print("MSE Train data: ", mean_squared_error(y_train, y_pred_train))
+print("MSE Test data: ", mean_squared_error(y_test, y_pred_test))
 
 # We see that the MSE of the test data is way higher than of the train data, indicating overfitting by the train data.
 
@@ -109,22 +116,22 @@ for alpha in tqdm_notebook(alphas):
     res = pd.DataFrame({"Features": X_train.columns, "Coefficients": ridge.coef_})
     res["alpha"] = alpha
     res["mse"] = mse_result
-    
+
     df_resultat_ridge.append(res)
 
 df_resultat_ridge = pd.concat(df_resultat_ridge)
 
-alphas_result=df_resultat_ridge.groupby("alpha")['mse'].mean()
+alphas_result = df_resultat_ridge.groupby("alpha")["mse"].mean()
 
 alphas_result
 
 # (m) Graph the MSE of the Ridge regression for each value of alphas.
 plt.figure(figsize=[15, 10])
 
-plt.plot(alphas_result.index, alphas_result.values, marker='x')
-plt.ylabel('MSE')
-plt.xlabel('Alpha level')
-plt.title('MSE values depending of alpha for ridge regression')
+plt.plot(alphas_result.index, alphas_result.values, marker="x")
+plt.ylabel("MSE")
+plt.xlabel("Alpha level")
+plt.title("MSE values depending of alpha for ridge regression")
 
 # (n) From the graph, create a high-performance Ridge regression model. Fit the model on the standardized train data. View model performance on standardized train and test data.
 # for me inspection of the graph it should be alpha = 35 since values are decreasing until 35 and afterwards slightly (!) increasing
@@ -133,8 +140,8 @@ ridge2 = Ridge(alpha=35)
 
 ridge2.fit(X_train_scaled, y_train)
 
-print('R2 Train data: ', ridge2.score(X_train_scaled, y_train))
-print('R2 Test data: ', ridge2.score(X_test_scaled, y_test))
+print("R2 Train data: ", ridge2.score(X_train_scaled, y_train))
+print("R2 Test data: ", ridge2.score(X_test_scaled, y_test))
 
 # Way better result!
 
@@ -142,8 +149,8 @@ print('R2 Test data: ', ridge2.score(X_test_scaled, y_test))
 y_pred_train_ridge = ridge2.predict(X_train_scaled)
 y_pred_test_ridge = ridge2.predict(X_test_scaled)
 
-print('MSE Train data: ', mean_squared_error(y_train, y_pred_train_ridge))
-print('MSE Test data: ', mean_squared_error(y_test, y_pred_test_ridge))
+print("MSE Train data: ", mean_squared_error(y_train, y_pred_train_ridge))
+print("MSE Test data: ", mean_squared_error(y_test, y_pred_test_ridge))
 
 # Still the MSE is higher for test data, but the difference is way lower than before, indicating still overfitting
 # however, it is not that severe as before
@@ -160,62 +167,62 @@ l1_ratio = np.arange(0.0, 1.01, 0.05)
 elastic_net = ElasticNet()
 
 params = {
-    'alpha': [0.01, 0.02, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0],
-    'l1_ratio': np.arange(0.0, 1.01, 0.05)
+    "alpha": [0.01, 0.02, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0],
+    "l1_ratio": np.arange(0.0, 1.01, 0.05),
 }
 
 grid_search = GridSearchCV(
     estimator=elastic_net,
-    param_grid=params, 
+    param_grid=params,
     cv=3,
-#    scoring='neg_mean_squared_error', 
-    n_jobs=-1
+    #    scoring='neg_mean_squared_error',
+    n_jobs=-1,
 )
 
 grid_search.fit(X_train_scaled, y_train)
 
 # Showing the best solution
-print('Best alpha: ', grid_search.best_params_['alpha'])
-print('Best L1 ratio: ', grid_search.best_params_['l1_ratio'])
+print("Best alpha: ", grid_search.best_params_["alpha"])
+print("Best L1 ratio: ", grid_search.best_params_["l1_ratio"])
 
 # (q) Fill in the code to display the score for each combination of alpha and l1_ratio. To do this, use the GridSearchCV documentation and look for the attributes that answer the question.
-alphas = grid_search.cv_results_['param_alpha']
-l1_ratios = grid_search.cv_results_['param_l1_ratio']
-scores = grid_search.cv_results_['mean_test_score']
+alphas = grid_search.cv_results_["param_alpha"]
+l1_ratios = grid_search.cv_results_["param_l1_ratio"]
+scores = grid_search.cv_results_["mean_test_score"]
 
 fig = plt.figure(figsize=(12, 8))
-ax = fig.add_subplot(111, projection='3d')
+ax = fig.add_subplot(111, projection="3d")
 
 colors = scores
 
-scatter=ax.scatter(alphas, l1_ratios, scores, c=colors, cmap='viridis')
+scatter = ax.scatter(alphas, l1_ratios, scores, c=colors, cmap="viridis")
 fig.colorbar(scatter)
-ax.set_xlabel('Alpha')
-ax.set_ylabel('L1 Ratio')
-ax.set_zlabel('Score')
-ax.set_title('Results of the GridSearch')
+ax.set_xlabel("Alpha")
+ax.set_ylabel("L1 Ratio")
+ax.set_zlabel("Score")
+ax.set_title("Results of the GridSearch")
 
 plt.show()
 
 # (r) Create the L1 L2 penalty model with the best parameters obtained by the GridSearchCV. Fit the model on the standardized train data. View model performance on standardized train and test data.
 elastic_net = ElasticNet(
-    alpha = grid_search.best_params_['alpha'], #1.0,
-    l1_ratio = grid_search.best_params_['l1_ratio'] #0.35000000000000003
+    alpha=grid_search.best_params_["alpha"],  # 1.0,
+    l1_ratio=grid_search.best_params_["l1_ratio"],  # 0.35000000000000003
 )
 
 elastic_net.fit(X_train_scaled, y_train)
 
 
-print('R2 Train data: ', elastic_net.score(X_train_scaled, y_train))
-print('R2 Test data: ', elastic_net.score(X_test_scaled, y_test))
+print("R2 Train data: ", elastic_net.score(X_train_scaled, y_train))
+print("R2 Test data: ", elastic_net.score(X_test_scaled, y_test))
 
 # (s) Calculate the root of the mean square error of this model on the standardized train and test data. Interpret the result.
 y_pred_train_en = elastic_net.predict(X_train_scaled)
 y_pred_test_en = elastic_net.predict(X_test_scaled)
 
-print('MSE Train data: ', mean_squared_error(y_train, y_pred_train_en))
-print('MSE Test data: ', mean_squared_error(y_test, y_pred_test_en))
+print("MSE Train data: ", mean_squared_error(y_train, y_pred_train_en))
+print("MSE Test data: ", mean_squared_error(y_test, y_pred_test_en))
 
-# Still we see that the train data mse is lower than the test data mse, indicating some kind of overfitting in 
+# Still we see that the train data mse is lower than the test data mse, indicating some kind of overfitting in
 # the training data. The ridge results (optimized model ridge2) indicate lower MSE, therefore, Ridge models have better model for teh data
 # than the elastic net.

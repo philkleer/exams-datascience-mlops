@@ -35,7 +35,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 import matplotlib.pyplot as plt
 
 # (b) Using pandas, create a DataFrame calledsv_datafrom the file"vehicles_silhouette.csv". Determine the column containing the vehicle index.
-sv_data = pd.read_csv('vehicles_silhouette.csv', index_col='vehicule_id')
+sv_data = pd.read_csv("vehicles_silhouette.csv", index_col="vehicule_id")
 
 # (c) Display the first 5 rows of the dataset.
 sv_data.head()
@@ -45,8 +45,8 @@ sv_data.describe()
 
 # (e) Using a boxplot, visually compare the distributions of numerical variables.
 sv_data.boxplot()
-plt.xlabel('Variables')
-plt.ylabel('Values')
+plt.xlabel("Variables")
+plt.ylabel("Values")
 
 # (f) Perform a Min-Max normalization on the different variables of sv_data. We can use the MinMaxScaler class from the sklearn.preprocessing sub-module.
 from sklearn.preprocessing import MinMaxScaler
@@ -72,12 +72,12 @@ kmeans1_predictions = kmeans.labels_
 
 # (d) Show distribution of observations by cluster. We can use the value_counts method or a histogram. Does the distribution in the different clusters seem balanced to you?
 sv_data2 = sv_data
-sv_data2['kmeans1_pred'] = kmeans1_predictions
+sv_data2["kmeans1_pred"] = kmeans1_predictions
 
-sv_data2['kmeans1_pred'].value_counts()
+sv_data2["kmeans1_pred"].value_counts()
 
 plt.figure()
-plt.hist(sv_data2['kmeans1_pred'], bins=len(sv_data2['kmeans1_pred'].unique()))
+plt.hist(sv_data2["kmeans1_pred"], bins=len(sv_data2["kmeans1_pred"].unique()))
 
 # Does not seem balanced. Difference between lowest and highest is nearly 50!
 
@@ -87,11 +87,11 @@ plt.hist(sv_data2['kmeans1_pred'], bins=len(sv_data2['kmeans1_pred'].unique()))
 
 # (a) We now want to group the resulting centroids into clusters, not the samples. To do this, construct a dendogram from centroid_kmeans1 to determine an optimal number of clusters (strictly greater than 2). Assign this number of clusters to a variable named n_clusters_cah.
 
-linked = linkage(centroids_kmeans1, method='ward')
+linked = linkage(centroids_kmeans1, method="ward")
 
-linked 
+linked
 
-dendrogram(linked, leaf_rotation = 90., color_threshold = 0)
+dendrogram(linked, leaf_rotation=90.0, color_threshold=0)
 
 # for me it is 2 (highest space if I remember correctly ca. 3 to slightly above 5)
 # arbitrary set of n_clusters_cah
@@ -116,9 +116,9 @@ cah_clusters.labels_
 # Make the correspondence between the K-Means clusters with the CAH clusters to associate a CAH cluster with each observation.
 
 # (d) Using kmneans1_predictions and cah_clusters, create an additional column in sv_data named 'cluster_CAH'. This column will contain the associated CAH cluster.
-sv_data['kmeans_cluster'] = kmeans1_predictions
+sv_data["kmeans_cluster"] = kmeans1_predictions
 
-sv_data['cluster_CAH'] = np.nan
+sv_data["cluster_CAH"] = np.nan
 
 for cluster in np.unique(kmeans1_predictions):
     # gather all indices where condition is true, meaning gathering all data points of specific cluster
@@ -126,19 +126,19 @@ for cluster in np.unique(kmeans1_predictions):
     # find the corresping cah_cluster
     cah_cluster_km = cah_clusters.labels_[cluster]
     # set the value in the new variable
-    sv_data.loc[km_cluster_ind, 'cluster_CAH'] = cah_cluster_km
-    
-sv_data[['kmeans_cluster', 'cluster_CAH']].head()
+    sv_data.loc[km_cluster_ind, "cluster_CAH"] = cah_cluster_km
+
+sv_data[["kmeans_cluster", "cluster_CAH"]].head()
 
 # We will now be able to calculate the centroids of the ascending hierarchical classification.
 
 # (e) Using the groupby method, compute the centroids of each cluster obtained by CAH, i.e. it will take calculate the average of each column of sv_data based on the value of column "cluster_CAH". We will store the result in a variable named centroids_cah.
-centroids_cah = sv_data.groupby('cluster_CAH').mean()
+centroids_cah = sv_data.groupby("cluster_CAH").mean()
 
 centroids_cah
 
 # (f) Remove column "cluster_CAH" from sv_data.
-sv_data = sv_data.drop(columns='cluster_CAH', axis=1)
+sv_data = sv_data.drop(columns="cluster_CAH", axis=1)
 
 # 4. Mixed Classification - 2nd KMeans
 
@@ -154,20 +154,20 @@ kmeans.predict(sv_data)
 
 kmeans2_predictions = kmeans.labels_
 
-sv_data['kmeans2_predictions'] = kmeans.labels_
+sv_data["kmeans2_predictions"] = kmeans.labels_
 
 # 5. Predictions
 
 # In a file named "classes_vehicles.csv", we have the type of vehicle for each observation of sv_data: car, bus or van. We will determine if our clusters are representative of these labels.
 
 # (a) Read the file "classes_vehicles.csv" into a DataFrame named classes and display the first 5 lines .
-classes = pd.read_csv('classes_vehicles.csv', sep=';', index_col='vehicule_id')
+classes = pd.read_csv("classes_vehicles.csv", sep=";", index_col="vehicule_id")
 
 classes.head()
 
 # (b) Using a crosstab, compare the clusters found through the mixed classification with the vehicle types.Determine which cluster could correspond to each type of vehicle.
 combined = sv_data.join(classes)
 
-pd.crosstab(combined['class'], combined['kmeans2_predictions'])
+pd.crosstab(combined["class"], combined["kmeans2_predictions"])
 
 # No it is not the representation of the type of the car.

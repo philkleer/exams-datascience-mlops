@@ -22,18 +22,20 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import StandardScaler
 
-df = pd.read_csv('activity.csv')
+df = pd.read_csv("activity.csv")
 df.head()
 
 # (c) Store in a variable named target, the target variable 'activity'.
 # (d) Store in a variable called df_new, the df variable without the 'activity' column.
-target = df['activity']
-df_new = df.drop(columns='activity', axis=1)
+target = df["activity"]
+df_new = df.drop(columns="activity", axis=1)
 
 df_new.describe()
 
 # (e) Split the data into two samples: a training sample and a test sample. We will take an 80% distribution on the training data and instantiate a randomised seed at 1234. We will name the data sets X_train, Y_train, X_test and Y_test.
-X_train, X_test, y_train, y_test = train_test_split(df_new, target, test_size=0.2, random_state=1234)
+X_train, X_test, y_train, y_test = train_test_split(
+    df_new, target, test_size=0.2, random_state=1234
+)
 
 X_train.shape
 
@@ -46,8 +48,8 @@ X_train_var = sel.fit_transform(X_train)
 X_test_var = sel.transform(X_test)
 
 mask = sel.get_support()
-plt.matshow(mask.reshape(1,-1), cmap = 'gray_r')
-plt.xlabel('Features axis')
+plt.matshow(mask.reshape(1, -1), cmap="gray_r")
+plt.xlabel("Features axis")
 
 # (i) Normalise using the StandardScaler instance, the X_train and X_test variables, do the same for the X_train_var and X_test_var variables with a new instance of StandardScaler.
 scaler1 = StandardScaler()
@@ -88,11 +90,11 @@ plt.figure()
 # added because it's close to 100 where the threshold is met
 plt.xlim([1, 100])
 plt.xticks(range(1, 100, 5))
-plt.xlabel('Number of components')
-plt.ylabel('Explained variance ratio')
-plt.axhline(y = 0.95, color = 'r', linestyle = '--')
+plt.xlabel("Number of components")
+plt.ylabel("Explained variance ratio")
+plt.axhline(y=0.95, color="r", linestyle="--")
 # added line where I assume
-plt.axvline(x=66, color='b', linestyle='-')
+plt.axvline(x=66, color="b", linestyle="-")
 plt.plot(pca.explained_variance_ratio_.cumsum())
 
 # Depending on the number of principal components chosen earlier :
@@ -115,17 +117,17 @@ pc2_test = X_test_pca[:, 1]
 plt.figure(figsize=[12, 6])
 plt.subplot(1, 2, 1)
 plt.scatter(pc1_train, pc2_train, c=y_train, alpha=0.7)
-plt.title('Training Set')
-plt.xlabel('PC1')
-plt.ylabel('PC2')
-plt.colorbar(label='Class')
+plt.title("Training Set")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.colorbar(label="Class")
 
 plt.subplot(1, 2, 2)
 plt.scatter(pc1_test, pc2_test, c=y_test, alpha=0.7)
-plt.title('Training Set')
-plt.xlabel('PC1')
-plt.ylabel('PC2')
-plt.colorbar(label='Class')
+plt.title("Training Set")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.colorbar(label="Class")
 
 plt.show()
 
@@ -151,19 +153,26 @@ scores = []
 for k in range(1, 201):
     X_train_k = X_train_pca[:, :k]
     X_test_k = X_test_pca[:, :k]
-    
+
     knn = KNeighborsClassifier(n_neighbors=6)
     knn.fit(X_train_k, y_train)
-    
+
     score = knn.score(X_test_k, y_test)
-    
+
     scores.append(score)
-    
-print('Predictions scores calculated for k=[1, 200]:', scores)
+
+print("Predictions scores calculated for k=[1, 200]:", scores)
 
 # (w) What is the maximum score and for what reduction?
 
 best_score = max(scores)
 best_k = scores.index(best_score) + 1
 
-print('The best k is', best_k, 'with the best score', round(best_score, 5), '. Reduction is', X_test_var.shape[1] - best_k)
+print(
+    "The best k is",
+    best_k,
+    "with the best score",
+    round(best_score, 5),
+    ". Reduction is",
+    X_test_var.shape[1] - best_k,
+)

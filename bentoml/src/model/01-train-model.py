@@ -6,17 +6,17 @@ from sklearn.preprocessing import StandardScaler
 import bentoml
 import pickle
 
-print('Loading data ...')
+print("Loading data ...")
 
 # loading data
-X_train = pd.read_csv('data/processed/X_train.csv')
-y_train = pd.read_csv('data/processed/y_train.csv')
+X_train = pd.read_csv("data/processed/X_train.csv")
+y_train = pd.read_csv("data/processed/y_train.csv")
 
-X_test = pd.read_csv('data/processed/X_test.csv')
-y_test = pd.read_csv('data/processed/y_test.csv')
+X_test = pd.read_csv("data/processed/X_test.csv")
+y_test = pd.read_csv("data/processed/y_test.csv")
 
 # scaling
-scaler = StandardScaler()   
+scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.fit_transform(X_test)
 
@@ -24,17 +24,17 @@ X_train_scaled = pd.DataFrame(X_train_scaled, columns=X_train.columns)
 X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns)
 
 # saving scaled data
-X_train_scaled.to_csv('data/processed/X_train_scaled.csv', index=False)
-X_test_scaled.to_csv('data/processed/X_test_scaled.csv', index=False)
+X_train_scaled.to_csv("data/processed/X_train_scaled.csv", index=False)
+X_test_scaled.to_csv("data/processed/X_test_scaled.csv", index=False)
 
-print('Scaled data is saved in \'data/processed/\'')
+print("Scaled data is saved in 'data/processed/'")
 
-print('Fitting training model ...')
+print("Fitting training model ...")
 # creating model
 linreg = LinearRegression()
 linreg.fit(X_train_scaled, y_train)
 
-print('Predicting test model ...')
+print("Predicting test model ...")
 # test model
 y_pred = linreg.predict(X_test_scaled)
 
@@ -52,16 +52,14 @@ print(f"RMSE: {rmse:.4f}")
 
 # Model fit is awesome
 
-print('Registering model for bento (incl. scaler) ...')
+print("Registering model for bento (incl. scaler) ...")
 
 # Save the model in BentoML's Model Store
 # I added saving the scaler, since users will only enter raw data and we need to scale data before predictions
 model_ref = bentoml.sklearn.save_model(
-    "linreg_admission",
-    linreg,
-    custom_objects={"scaler": pickle.dumps(scaler)} 
+    "linreg_admission", linreg, custom_objects={"scaler": pickle.dumps(scaler)}
 )
 
 print(f"Model saved as: {model_ref}")
 
-print('All done!')
+print("All done!")

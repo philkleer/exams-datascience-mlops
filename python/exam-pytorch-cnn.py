@@ -48,24 +48,25 @@ print("partial s / partial g at x-1: ", g.grad)
 # The images are in the datasets/train and datasets/valid folders, organized in the following structure:
 
 # root_dir/
-# ├── class1/ 
-# │ ├── image1.png 
-# │ ├── image2.png 
-# │ └── ... 
+# ├── class1/
+# │ ├── image1.png
+# │ ├── image2.png
+# │ └── ...
 # └── class2/
-#   ├── image1.png 
+#   ├── image1.png
 #   ├── image2.png
 #   └── ... ...
 
 # Run the following cell to display the data structure.
 import os
 
+
 def display_directory_structure_limited(root_dir, max_files=3):
     for root, dirs, files in os.walk(root_dir):
-        level = root.replace(root_dir, '').count(os.sep)
-        indent = ' ' * 4 * level
+        level = root.replace(root_dir, "").count(os.sep)
+        indent = " " * 4 * level
         print(f"{indent}{os.path.basename(root)}/")
-        sub_indent = ' ' * 4 * (level + 1)
+        sub_indent = " " * 4 * (level + 1)
         for i, f in enumerate(files):
             if i < max_files:
                 print(f"{sub_indent}{f}")
@@ -74,7 +75,7 @@ def display_directory_structure_limited(root_dir, max_files=3):
                 break
 
 
-display_directory_structure_limited('datasets')
+display_directory_structure_limited("datasets")
 
 # Generator Definition
 
@@ -88,15 +89,17 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
-transform = transforms.Compose([
-    transforms.Resize((224, 224)), 
-    transforms.ToTensor(), 
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+transform = transforms.Compose(
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 # Create datasets with transform from above
-dataset_train = datasets.ImageFolder(root='datasets/train', transform=transform)
-dataset_test = datasets.ImageFolder(root='datasets/valid', transform=transform)
+dataset_train = datasets.ImageFolder(root="datasets/train", transform=transform)
+dataset_test = datasets.ImageFolder(root="datasets/valid", transform=transform)
 
 # create data loader (batches)
 dataloader_train = DataLoader(dataset_train, batch_size=32, shuffle=True)
@@ -107,12 +110,14 @@ import torch
 import torchvision
 import matplotlib.pyplot as plt
 
+
 def show_images(dataloader):
     for images, labels in dataloader:
-        fig, axes = plt.subplots(1, 6, figsize=(12,12))
+        fig, axes = plt.subplots(1, 6, figsize=(12, 12))
         for i, img in enumerate(images[:6]):
             axes[i].imshow(img.permute(1, 2, 0))
         break
+
 
 show_images(dataloader_train)
 
@@ -130,13 +135,13 @@ import torch.nn as nn
 model = models.resnet50(pretrained=True)
 
 for param in model.parameters():
-    param.requires_grad=False
+    param.requires_grad = False
 
 last_layer = model.fc
 num_neurons = last_layer.out_features
 
 print('Last layer name is "fc"')
-print(f'Number of neurons in last layer: {num_neurons}')
+print(f"Number of neurons in last layer: {num_neurons}")
 
 # Adapt the model to our problem. As a reminder, this is a two-class problem.
 
@@ -151,6 +156,7 @@ model.fc = nn.Linear(model.fc.in_features, num_classes)
 model.to(device)
 
 from torchsummary import summary
+
 summary(model, input_size=((3, 224, 224)), device=device)
 
 # Define a relevant loss function under the name criterion.
@@ -165,10 +171,10 @@ model.eval()
 
 with torch.no_grad():
     y_pred = model(X_batch)
-    
+
 loss = criterion(y_pred, y_batch)
 
-print(f'Loss: {loss.item()}')
+print(f"Loss: {loss.item()}")
 
 # Model Traning
 
@@ -183,133 +189,133 @@ for epoch in range(epochs):
     # In this mode some layers of the model act differently
     model.train()
     loss_total = 0
-    
+
     for X_batch, y_batch in dataloader_train:
         optimizer.zero_grad()
-        
+
         y_pred = model(X_batch)
-        
+
         loss = criterion(y_pred, y_batch)
-        
+
         loss.backward()
-        
+
         optimizer.step()
-        
+
         loss_total += loss.item()
-    
+
     avg_train_loss = loss_total / len(dataloader_train)
-    
+
     model.eval()
     correct = 0
-    total = 0 
-    
+    total = 0
+
     with torch.no_grad():
         for X_batch, y_batch in dataloader_test:
             y_pred = model(X_batch)
             _, predicted = torch.max(y_pred, 1)
-            
+
             total += y_batch.size(0)
             correct += (predicted == y_batch).sum().item()
-            
-    test_accuracy = (correct/total)
-    
-    print(f'Epoch: {epoch+1}/{epochs}')
-    print(f'Training loss: {avg_train_loss:.4f}')
-    print(f'Test accuracy: {test_accuracy:.4f}')
+
+    test_accuracy = correct / total
+
+    print(f"Epoch: {epoch + 1}/{epochs}")
+    print(f"Training loss: {avg_train_loss:.4f}")
+    print(f"Test accuracy: {test_accuracy:.4f}")
 
 # Unfreeze the parameters of the model.layer4 block.
 for param in model.parameters():
-    param.requires_grad=False
-    
+    param.requires_grad = False
+
 for param in model.layer4.parameters():
-    param.requires_grad=True
-    
+    param.requires_grad = True
+
 # optimizer and epochs as above
 for epoch in range(epochs):
     # In this mode some layers of the model act differently
     model.train()
     loss_total = 0
-    
+
     for X_batch, y_batch in dataloader_train:
         optimizer.zero_grad()
-        
+
         y_pred = model(X_batch)
-        
+
         loss = criterion(y_pred, y_batch)
-        
+
         loss.backward()
-        
+
         optimizer.step()
-        
+
         loss_total += loss.item()
-    
+
     avg_train_loss = loss_total / len(dataloader_train)
-    
+
     model.eval()
     correct = 0
-    total = 0 
-    
+    total = 0
+
     with torch.no_grad():
         for X_batch, y_batch in dataloader_test:
             y_pred = model(X_batch)
             _, predicted = torch.max(y_pred, 1)
-            
+
             total += y_batch.size(0)
             correct += (predicted == y_batch).sum().item()
-            
-    test_accuracy = (correct/total)
-    
-    print(f'Epoch: {epoch+1}/{epochs}')
-    print(f'Training loss: {avg_train_loss:.4f}')
-    print(f'Test accuracy: {test_accuracy:.4f}')
+
+    test_accuracy = correct / total
+
+    print(f"Epoch: {epoch + 1}/{epochs}")
+    print(f"Training loss: {avg_train_loss:.4f}")
+    print(f"Test accuracy: {test_accuracy:.4f}")
 
 # Retrain the model with a smaller learning rate over a few epochs, displaying the different metrics for each metric as before.
 optimizer = torch.optim.Adam(params=model.parameters(), lr=1e-4)
 
 for param in model.parameters():
-    param.requires_grad=False
-    
+    param.requires_grad = False
+
 for param in model.layer4.parameters():
-    param.requires_grad=True
-    
+    param.requires_grad = True
+
 # optimizer and epochs as above
 for epoch in range(epochs):
     # In this mode some layers of the model act differently
     model.train()
     loss_total = 0
-    
+
     for X_batch, y_batch in dataloader_train:
         optimizer.zero_grad()
-        
+
         y_pred = model(X_batch)
-        
+
         loss = criterion(y_pred, y_batch)
-        
+
         loss.backward()
-        
+
         optimizer.step()
-        
+
         loss_total += loss.item()
-    
+
     avg_train_loss = loss_total / len(dataloader_train)
-    
+
     model.eval()
     correct = 0
-    total = 0 
-    
+    total = 0
+
     with torch.no_grad():
         for X_batch, y_batch in dataloader_test:
             y_pred = model(X_batch)
             _, predicted = torch.max(y_pred, 1)
-            
+
             total += y_batch.size(0)
             correct += (predicted == y_batch).sum().item()
-            
-    test_accuracy = (correct/total)
-    
-    print(f'Epoch: {epoch+1}/{epochs}')
-    print(f'Training loss: {avg_train_loss:.4f}')
-    print(f'Test accuracy: {test_accuracy:.4f}')
+
+    test_accuracy = correct / total
+
+    print(f"Epoch: {epoch + 1}/{epochs}")
+    print(f"Training loss: {avg_train_loss:.4f}")
+    print(f"Test accuracy: {test_accuracy:.4f}")
 
 # We can see that the mechanism is not working perfectly good. If the animal is big (pi
 
@@ -320,6 +326,7 @@ import matplotlib.pyplot as plt
 from torchvision import models, transforms
 from PIL import Image
 
+
 def make_gradcam_heatmap(img_tensor, model, target_layer_name, pred_index=None):
     # Skip forward to get target layer predictions and activations
     def forward_hook(module, input, output):
@@ -327,24 +334,24 @@ def make_gradcam_heatmap(img_tensor, model, target_layer_name, pred_index=None):
 
     # Register a hook on the target layer to retrieve its outputs
     hook = model._modules.get(target_layer_name).register_forward_hook(forward_hook)
-    
+
     # Perform a forward pass to obtain model outputs
     output = model(img_tensor)
-    
+
     # Remove hook after getting activations
     hook.remove()
 
     # If no prediction index is provided, use the one with the highest probability
     if pred_index is None:
         pred_index = output.argmax(dim=1).item()
-    
+
     # Class probability value
     y = output[0, pred_index]
-    
+
     # Skip backwards to get the gradients of the target layer
-    model.zero_grad() # Reset gradients
-    model.features.retain_grad() # Keep target layer gradients
-    y.backward(retain_graph=True) # Calculate gradients by backpropagation
+    model.zero_grad()  # Reset gradients
+    model.features.retain_grad()  # Keep target layer gradients
+    y.backward(retain_graph=True)  # Calculate gradients by backpropagation
 
     # Get target layer gradients and activations
     gradients = model.features.grad[0]
@@ -359,54 +366,56 @@ def make_gradcam_heatmap(img_tensor, model, target_layer_name, pred_index=None):
 
     # Calculate the heatmap
     heatmap = torch.mean(activations, dim=0).detach().numpy()
-    heatmap = np.maximum(heatmap, 0) # Keep only positive values
-    heatmap /= np.max(heatmap) # Normalize the heatmap
+    heatmap = np.maximum(heatmap, 0)  # Keep only positive values
+    heatmap /= np.max(heatmap)  # Normalize the heatmap
 
     return heatmap
 
-target_layer = 'layer4'
+
+target_layer = "layer4"
 
 img_paths = [
-    'datasets/valid/bees/2173503984_9c6aaaa7e2.jpg',
-    'datasets/valid/bees/54736755_c057723f64.jpg',
-    'datasets/valid/ants/459442412_412fecf3fe.jpg',
-    'datasets/valid/ants/892676922_4ab37dce07.jpg'
+    "datasets/valid/bees/2173503984_9c6aaaa7e2.jpg",
+    "datasets/valid/bees/54736755_c057723f64.jpg",
+    "datasets/valid/ants/459442412_412fecf3fe.jpg",
+    "datasets/valid/ants/892676922_4ab37dce07.jpg",
 ]
 
 bees_index = 1
 ants_index = 0
 
-preprocess = transform = transforms.Compose([
-    transforms.Resize((224, 224)), 
-    transforms.ToTensor(), 
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+preprocess = transform = transforms.Compose(
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 
 for img_path in img_paths:
     img = Image.open(img_path)
     img_tensor = preprocess(img).unsqueeze(0)
-    
+
     heatmap_bees = make_gradcam_heatmap(img_tensor, model, target_layer, bees_index)
     heatmap_ants = make_gradcam_heatmap(img_tensor, model, target_layer, ants_index)
-    
+
     plt.figure(figsize=(12, 8))
     plt.subplot(2, 2, 1)
     plt.imshow(img)
-    #plt.title(f'Original image: {img_path.split('/')[-1]}')
-    
+    # plt.title(f'Original image: {img_path.split('/')[-1]}')
+
     plt.subplot(2, 2, 2)
-    plt.imshow(heatmap_bees, cmap='jet')
-    plt.title('Grad-CAM Heatmap for Bees') 
-    
+    plt.imshow(heatmap_bees, cmap="jet")
+    plt.title("Grad-CAM Heatmap for Bees")
+
     plt.subplot(2, 2, 3)
     plt.imshow(img)
-    #plt.title(f'Original image: {img_path.split('/')[-1]}')
-    
+    # plt.title(f'Original image: {img_path.split('/')[-1]}')
+
     plt.subplot(2, 2, 4)
-    plt.imshow(heatmap_ants, cmap='jet')
-    plt.title('Grad-CAM Heatmap for Ants')
-    
+    plt.imshow(heatmap_ants, cmap="jet")
+    plt.title("Grad-CAM Heatmap for Ants")
+
     plt.tight_layout()
     plt.show()
-

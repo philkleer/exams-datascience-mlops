@@ -8,15 +8,16 @@
 
 import pandas as pd
 import numpy as np
-df = pd.read_csv('firefighter_london.csv', index_col=0)
 
-print(df.head(), end='\n\n')
-print(df.info(), end='\n\n')
-print(df.describe(), end='\n\n')
+df = pd.read_csv("firefighter_london.csv", index_col=0)
+
+print(df.head(), end="\n\n")
+print(df.info(), end="\n\n")
+print(df.describe(), end="\n\n")
 
 # (d) Separate the explanatory variables in a dataframe X and the target variable AttendanceTimeSeconds in y.
-X = df.drop(columns='AttendanceTimeSeconds', axis=1)
-y = df['AttendanceTimeSeconds']
+X = df.drop(columns="AttendanceTimeSeconds", axis=1)
+y = df["AttendanceTimeSeconds"]
 
 # 1. Formatting dates
 
@@ -39,25 +40,27 @@ y = df['AttendanceTimeSeconds']
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
-date_x = df[['DateAndTimeMobilised', 'DateAndTimeOfCall']]
+date_x = df[["DateAndTimeMobilised", "DateAndTimeOfCall"]]
+
 
 class DateFormatter(BaseEstimator, TransformerMixin):
     def __init__(self):
         return None
-    
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X):
         new_X = pd.DataFrame()
         for col in X.columns:
             X[col] = pd.to_datetime(X[col])
-            new_X[f'{col}_month'] = X[col].dt.month
-            new_X[f'{col}_weekday'] = X[col].dt.dayofweek
-            new_X[f'{col}_day'] = X[col].dt.day
-            new_X[f'{col}_hour'] = X[col].dt.hour
-        
+            new_X[f"{col}_month"] = X[col].dt.month
+            new_X[f"{col}_weekday"] = X[col].dt.dayofweek
+            new_X[f"{col}_day"] = X[col].dt.day
+            new_X[f"{col}_hour"] = X[col].dt.hour
+
         return new_X
+
 
 # (d) Run the next cell to verify that the date formatting worked.
 date_encode = DateFormatter()
@@ -88,7 +91,9 @@ te = TargetEncoder()
 ohe = OneHotEncoder()
 poly = PolynomialFeatures(degree=2)
 
-cat_x = df[['PropertyCategory', 'PlusCode_Description', 'IncGeo_BoroughName', 'CodeStation']]
+cat_x = df[
+    ["PropertyCategory", "PlusCode_Description", "IncGeo_BoroughName", "CodeStation"]
+]
 
 # (d) Create a pipeline named poly_encoding with 2 steps:
 
@@ -96,19 +101,9 @@ cat_x = df[['PropertyCategory', 'PlusCode_Description', 'IncGeo_BoroughName', 'C
 # Calculation of polynomial features.
 # (e) From the pipeline poly_encoding and from TargetEncoder, define an object FeatureUnion named cat_pipeline to perform the two encoders in parallel.
 
-poly_encoding = Pipeline(
-    steps=[
-        ('onehot', ohe),
-        ('polynomial', poly)
-    ]
-)
+poly_encoding = Pipeline(steps=[("onehot", ohe), ("polynomial", poly)])
 
-cat_pipeline = FeatureUnion(
-    [
-        ('poly_enc', poly_encoding),
-        ('target_enc', te)        
-    ]
-)
+cat_pipeline = FeatureUnion([("poly_enc", poly_encoding), ("target_enc", te)])
 
 # (f) Run the following cell to verify that your pipeline has been implemented.
 f = cat_pipeline.fit(cat_x, y)
@@ -119,7 +114,7 @@ f = cat_pipeline.fit(cat_x, y)
 
 # $$ \sqrt{{(X_{\text{Longitude_x}} - X_{\text{Longitude_y}})}^2 + {(X_{\text{Latitude_x}} - X_{\text{Latitude_y}}})^2 }$$
 # (a) Store in a DataFrame dist_x the variables Latitude_x, Longitude_x, Latitude_y and Longitude_y.
-dist_x = df[['Latitude_x', 'Longitude_x', 'Latitude_y', 'Longitude_y']]
+dist_x = df[["Latitude_x", "Longitude_x", "Latitude_y", "Longitude_y"]]
 
 # (b) Define a class DistanceFromStation which inherits from the classes BaseEstimator and TransformerMixin. This class will have three methods, __init__, fit et transform, defined as follows:
 # __init__: does nothing,
@@ -129,17 +124,22 @@ dist_x = df[['Latitude_x', 'Longitude_x', 'Latitude_y', 'Longitude_y']]
 # calculates the formula defined above,
 # returns it in a  DataFrame.
 
+
 class DistanceFromStation(BaseEstimator, TransformerMixin):
     def __init__(self):
         return None
-    
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X):
-        X['DistanceFromStation'] = np.sqrt((X['Longitude_x'] - X['Longitude_y'])**2 + (X['Latitude_x'] - X['Latitude_y'])**2)
-        
+        X["DistanceFromStation"] = np.sqrt(
+            (X["Longitude_x"] - X["Longitude_y"]) ** 2
+            + (X["Latitude_x"] - X["Latitude_y"]) ** 2
+        )
+
         return X
+
 
 # (c) Run the following cell to verify that your class has been implemented.
 distance_encode = DistanceFromStation()
@@ -160,7 +160,7 @@ distance_encode.fit_transform(dist_x)
 
 from sklearn.impute import SimpleImputer
 
-imputer = SimpleImputer(strategy='most_frequent')
+imputer = SimpleImputer(strategy="most_frequent")
 
 # We will now define a ColumnTransformer to put together all the pre-processing steps.
 
@@ -177,12 +177,25 @@ imputer = SimpleImputer(strategy='most_frequent')
 from sklearn.compose import ColumnTransformer
 
 encoding = ColumnTransformer(
-    transformers = [
-        ('date', date_encode, ['DateAndTimeMobilised', 'DateAndTimeOfCall']), 
-        ('categorical', cat_pipeline, ['PropertyCategory', 'PlusCode_Description', 'IncGeo_BoroughName', 'CodeStation']),
-        ('distance', distance_encode, ['Latitude_x', 'Longitude_x', 'Latitude_y', 'Longitude_y']),
-        ('dropping', 'drop', ['IncidentNumber', 'NomStation']),
-        ('imputing', imputer, ['NumPumpsAttending'])        
+    transformers=[
+        ("date", date_encode, ["DateAndTimeMobilised", "DateAndTimeOfCall"]),
+        (
+            "categorical",
+            cat_pipeline,
+            [
+                "PropertyCategory",
+                "PlusCode_Description",
+                "IncGeo_BoroughName",
+                "CodeStation",
+            ],
+        ),
+        (
+            "distance",
+            distance_encode,
+            ["Latitude_x", "Longitude_x", "Latitude_y", "Longitude_y"],
+        ),
+        ("dropping", "drop", ["IncidentNumber", "NomStation"]),
+        ("imputing", imputer, ["NumPumpsAttending"]),
     ]
 )
 
@@ -223,17 +236,19 @@ scaler = StandardScaler(with_mean=False)
 model = LinearRegression()
 final_pipeline = Pipeline(
     steps=[
-        ('transform variables', encoding), 
-        ('scaling', scaler),
-        ('selecting', selector),
-        ('modeling', model)
+        ("transform variables", encoding),
+        ("scaling", scaler),
+        ("selecting", selector),
+        ("modeling", model),
     ]
 )
 
 # (c) Separate data into a training set and a test set (20%).
-from sklearn.model_selection import train_test_split 
+from sklearn.model_selection import train_test_split
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 7786)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=7786
+)
 
 # (d) Run the following cell to verify that the final pipeline has been implemented. (Note: the score is not good but the main goal here is the successful implementation of a Pipeline).
 final_pipeline.fit(X_train, y_train)

@@ -5,15 +5,10 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 security = HTTPBasic()
 
 # Hardcoded user credentials
-USER_CREDENTIALS = {
-    "alice": "wonderland",
-    "bob": "builder",
-    "clementine": "mandarine"
-}
+USER_CREDENTIALS = {"alice": "wonderland", "bob": "builder", "clementine": "mandarine"}
 
-ADMIN_CREDENTIALS = {
-    "admin": "4dm1n"
-}
+ADMIN_CREDENTIALS = {"admin": "4dm1n"}
+
 
 def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username
@@ -26,6 +21,7 @@ def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
     return username
+
 
 def authenticate_admin(credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username

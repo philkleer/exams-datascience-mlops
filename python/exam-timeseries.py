@@ -15,14 +15,16 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
 # (b) Load the data contained in the file portland_v2.csv. Pay attention to the index format and the data types before proceeding to the next questions. You can verify that the series is properly indexed by calendar data by displaying the index attribute of the series.
-data = pd.read_csv('portland_v2.csv', index_col=[0], header=0, parse_dates=[0], squeeze=True)
+data = pd.read_csv(
+    "portland_v2.csv", index_col=[0], header=0, parse_dates=[0], squeeze=True
+)
 
 data.head()
 
 # (c) Plot the entire series on a graph.
 data.plot()
-plt.ylabel('No. of passenger')
-plt.xlabel('Year')
+plt.ylabel("No. of passenger")
+plt.xlabel("Year")
 plt.show()
 
 # (d) Perform two seasonal decompositions using statsmodels: the first with an additive model and the second with a multiplicative model. Display the corresponding graphs.
@@ -34,26 +36,25 @@ plt.show()
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 result = seasonal_decompose(data)
-result_mult = seasonal_decompose(data, model='multiplicative')
+result_mult = seasonal_decompose(data, model="multiplicative")
 
-print('additive')
+print("additive")
 result.plot()
-plt.show();
-
-print('multiplicative')
+plt.show()
+print("multiplicative")
 result_mult.plot()
 plt.show()
 
-# There is a linear time increasing trend although at the end it does not increase much/decrease only a litte. 
-# However, over all it is increasing. Hence, seasonality is year. 
-# We see a clear highs and lows in summer and in winter in each year. 
+# There is a linear time increasing trend although at the end it does not increase much/decrease only a litte.
+# However, over all it is increasing. Hence, seasonality is year.
+# We see a clear highs and lows in summer and in winter in each year.
 # The multiplicative models gives more stationary results, since the residuals are equally distributed.
-# For the additive model, the residuals show a lot of white noise. 
+# For the additive model, the residuals show a lot of white noise.
 
 # (g) Using Numpy, store the logarithm of the series in the variable datalog. Plot the new series on a graph. Why is this manipulation relevant in our case?
 datalog = np.log(data)
 
-# it is relevant since we can only analyze additive models and with the log transformation we transform the 
+# it is relevant since we can only analyze additive models and with the log transformation we transform the
 # multiplicative model to an additive model with this link function.
 
 # We now aim to verify the stationarity of our series and determine the order of differencing for the simple term, d, as well as for the seasonal term, D. To do this, we will use two approaches: a visual and empirical approach using the function pd.plotting.autocorrelation_plot, and a statistical approach with the Augmented Dickey-Fuller test (ADF).
@@ -66,8 +67,8 @@ pd.plotting.autocorrelation_plot(datalog)
 # (i) Create and display the autocorrelogram of the datalog_1 series, corresponding to the datalog series differenced at order 1. Remember to remove the missing values created by the differencing. Does the series appear stationary?
 datalog_1 = datalog.diff().dropna()
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,7))
-datalog_1.plot(ax = ax1) 
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 7))
+datalog_1.plot(ax=ax1)
 pd.plotting.autocorrelation_plot(datalog_1, ax=ax2)
 
 # there are still significant peaks, probably due to seasonality. However, it goes further into direction of stationary than before
@@ -75,11 +76,11 @@ pd.plotting.autocorrelation_plot(datalog_1, ax=ax2)
 # We will now deseasonalize the series based on the period identified earlier. For this, we can use the periods parameter of the diff method.
 
 # (j) Create and display the autocorrelogram of the datalog_2 series, corresponding to the datalog_1 series differenced and deseasonalized. Does the series appear stationary?
-datalog_2 = datalog_1.diff(periods = 12).dropna() 
+datalog_2 = datalog_1.diff(periods=12).dropna()
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,7))
-datalog_2.plot(ax=ax1) 
-pd.plotting.autocorrelation_plot(datalog_2, ax=ax2) 
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 7))
+datalog_2.plot(ax=ax1)
+pd.plotting.autocorrelation_plot(datalog_2, ax=ax2)
 
 # now we can see that the peaks within the lines, and therefore, it appears to be stationary.
 
@@ -94,7 +95,7 @@ sm.tsa.stattools.adfuller(datalog_2)[2]
 from statsmodels.graphics.tsaplots import plot_pacf, plot_acf
 
 plt.figure()
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,7))
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 7))
 plot_acf(datalog_2, lags=36, ax=ax1)
 plot_pacf(datalog_2, lags=36, ax=ax2)
 plt.show()
@@ -131,52 +132,56 @@ plt.show()
 # suggestions: Q = 1 (at 12 significant, after on only insignificant and lowe)
 
 # (n) Instantiate a $\operatorname{SARIMAX}$ model on the datalog series. Arbitrarily use the parameters p=0, d=1, q=0, P=0, D=1, Q=1, and k=12. Display an analysis of the model using the summary method.
-model=sm.tsa.SARIMAX(datalog,order=(0,1,0),seasonal_order=(0,1,1,12))
-sarima=model.fit()
+model = sm.tsa.SARIMAX(datalog, order=(0, 1, 0), seasonal_order=(0, 1, 1, 12))
+sarima = model.fit()
 print(sarima.summary())
 
 # (o) Using the get_forecast method, predict the values of the series for the 12 months following the last observed value. Display the predictions and the original series on the same graph. Remember the log transformation applied in the previous questions.
 prediction = sarima.get_forecast(steps=12).summary_frame()
 
-fig, ax = plt.subplots(figsize=(15,5))
+fig, ax = plt.subplots(figsize=(15, 5))
 
 prediction = np.exp(prediction)
 plt.plot(data)
-prediction['mean'].plot(ax=ax, style='k--') 
+prediction["mean"].plot(ax=ax, style="k--")
 ax.fill_between(
-    prediction.index, 
-    prediction['mean_ci_lower'], 
-    prediction['mean_ci_upper'], 
-    color='k', alpha=0.1
+    prediction.index,
+    prediction["mean_ci_lower"],
+    prediction["mean_ci_upper"],
+    color="k",
+    alpha=0.1,
 )
 
 # The data in the file portland_8182.csv contains the actual values for these 12 months.
 
 # (p) Plot on the same graph the predictions, the actual values, and, if desired, the confidence interval of the predictions.
 
-data_correct = pd.read_csv('portland_8182.csv', index_col=[0], header=0, parse_dates=[0], squeeze=True)
+data_correct = pd.read_csv(
+    "portland_8182.csv", index_col=[0], header=0, parse_dates=[0], squeeze=True
+)
 
 
 prediction = sarima.get_forecast(steps=12).summary_frame()
 
-fig, ax = plt.subplots(figsize = (15,5))
+fig, ax = plt.subplots(figsize=(15, 5))
 
 prediction = np.exp(prediction)
 plt.plot(data)
-prediction['mean'].plot(ax=ax, style='k--', label='Predicted') 
+prediction["mean"].plot(ax=ax, style="k--", label="Predicted")
 ax.fill_between(
-    prediction.index, 
-    prediction['mean_ci_lower'], 
-    prediction['mean_ci_upper'], 
-    color='k', alpha=0.1
+    prediction.index,
+    prediction["mean_ci_lower"],
+    prediction["mean_ci_upper"],
+    color="k",
+    alpha=0.1,
 )
 
-data_correct.plot(ax=ax, style='r-', label='Actual')
+data_correct.plot(ax=ax, style="r-", label="Actual")
 
-plt.title('SARIMA Predictions vs. actual data')
-plt.xlabel('Year')
-plt.ylabel('Passengers')
-plt.legend(loc='upper left')
+plt.title("SARIMA Predictions vs. actual data")
+plt.xlabel("Year")
+plt.ylabel("Passengers")
+plt.legend(loc="upper left")
 plt.show()
 
 # The prediction error is defined as: $$X - \widehat{X}$$
@@ -189,8 +194,7 @@ plt.show()
 
 # (r) Conclude on the model's quality. Does it overestimate or underestimate the data?
 
-rme = 100 * abs((data_correct - prediction['mean'])) / data_correct
+rme = 100 * abs((data_correct - prediction["mean"])) / data_correct
 
-print('The relative mean error is', rme.mean())
+print("The relative mean error is", rme.mean())
 # the predictions are quite close to the reality (as can also be seen in the graph). The relative mean error is just 1.72%.
-

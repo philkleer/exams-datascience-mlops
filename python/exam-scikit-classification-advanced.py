@@ -14,35 +14,35 @@
 import pandas as pd
 import numpy as np
 
-data = pd.read_csv('lending_file_2015_2016.csv', index_col=0)
+data = pd.read_csv("lending_file_2015_2016.csv", index_col=0)
 
 data.head()
 
 # (b) Delete the columns that have more than 40% missing values.
 # print missing per column
-data.isna().mean()*100
+data.isna().mean() * 100
 
 # delete column if over 40%
 for column in data.columns:
     if data[column].isna().mean() > 0.40:
         data.drop(columns=column, axis=1, inplace=True)
-        print('Column:', column, ' was removed.')
+        print("Column:", column, " was removed.")
 
 # The column emp_title informs us about the profession of the person who requested the loan.
 
 # (c) Display the number of unique values ​​in the emp_title column. Can we transform this column? Should we remove it?
 # (d) Transform or delete the column.
 
-data['emp_title'].nunique()
+data["emp_title"].nunique()
 
-data['emp_title'].value_counts(normalize=True)
+data["emp_title"].value_counts(normalize=True)
 
 # This high number might suggest that there is no data cleaning at all (like grouping in job areas).
 # Since this would be too cumbersome in a 2hrs exam, we will remove the variable
 
 # The variable has 201.347 unique values. The highest value for a job title is 2.04% (teacher)
 # of the data. Therefore, at this point, I decide to delete the variable.
-data.drop(columns='emp_title', axis=1, inplace=True)
+data.drop(columns="emp_title", axis=1, inplace=True)
 
 # (e) Remove the rows that have at least one null value.
 # Removing all rows with min. 1 Null/NA
@@ -74,17 +74,18 @@ data.dropna(axis=0, inplace=True)
 # that will not be reimbursed: situation B
 # for which we cannot make a reasonable assumption: situation C
 
-# I think the description of `In Grace Period` is wrong, since it is the same as for `Current`. 
+# I think the description of `In Grace Period` is wrong, since it is the same as for `Current`.
 # Usually `In Grace Period` means that a loan is in a pause of payments (although all payments until then were
 # on time), which might indicate a risk.
-data['loan_status'].value_counts(normalize=1)
+data["loan_status"].value_counts(normalize=1)
 
-# We can see that nearly 63% of the loans are fully paid,ca. 20% are current, ca. 17% are Charged Off and below 
+# We can see that nearly 63% of the loans are fully paid,ca. 20% are current, ca. 17% are Charged Off and below
 # 1% for each of the other categories.
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.countplot(x=data['loan_status'])
+
+sns.countplot(x=data["loan_status"])
 plt.show()
 
 # Situation A: reimbursed loan
@@ -106,81 +107,101 @@ plt.show()
 
 # filter for the cases mentioned in h)
 data = data.loc[
-    (data['loan_status']=='Fully Paid') | # A
-    (data['loan_status']=='Current') | # A 
-    (data['loan_status']=='Charged Off') | # B
-    (data['loan_status']=='In Grace Period') | # B 
-    (data['loan_status']=='Late (31-120 days)') | # B
-    (data['loan_status']=='Late (16-30 days)') # B
-    ]
+    (data["loan_status"] == "Fully Paid")  # A
+    | (data["loan_status"] == "Current")  # A
+    | (data["loan_status"] == "Charged Off")  # B
+    | (data["loan_status"] == "In Grace Period")  # B
+    | (data["loan_status"] == "Late (31-120 days)")  # B
+    | (data["loan_status"] == "Late (16-30 days)")  # B
+]
 
 # create the target variable
-data.loc[:, 'target'] = data['loan_status'].apply(
-    lambda x: 1 if x in ['Charged Off', 'In Grace Period', 'Late (31-120 days)', 'Late (16-30 days)'] else 0
+data.loc[:, "target"] = data["loan_status"].apply(
+    lambda x: 1
+    if x
+    in ["Charged Off", "In Grace Period", "Late (31-120 days)", "Late (16-30 days)"]
+    else 0
 )
 
 data.target.value_counts(normalize=True)
 
-sns.countplot(x=data['target'])
+sns.countplot(x=data["target"])
 plt.show()
 
 # We can now delete the variable loan_status.
 
 # (m) delete the variable loan_status
-data.drop(columns='loan_status', axis=1, inplace=True)
+data.drop(columns="loan_status", axis=1, inplace=True)
 
 # The variable grade contains a grade from A to G, the interest rate is directly calculated from this grade. A poorly rated but properly repaid loan therefore earns investors more than an A-rated loan.
 
 # (n) Display the proportion of loans in class 0 and class 1 for each of the grades in the grade variable.
-pd.crosstab(data['target'], data['grade'], normalize = 0)
+pd.crosstab(data["target"], data["grade"], normalize=0)
 
 # (o) Change the values of the variable grade from A to G by grades from 6 to 0 respectively.
-data.loc[:, 'grade'] = data['grade'].apply(
-    lambda x: 6 if x=='A' else 5 if x=='B' else 4 if x=='C' else 3 if x=='D' else
-    2 if x=='E' else 1 if x=='F' else 0 
+data.loc[:, "grade"] = data["grade"].apply(
+    lambda x: 6
+    if x == "A"
+    else 5
+    if x == "B"
+    else 4
+    if x == "C"
+    else 3
+    if x == "D"
+    else 2
+    if x == "E"
+    else 1
+    if x == "F"
+    else 0
 )
 
 # (p) Choose the observations that you believe are important in order to maximize investor returns and explain your strategy (a poorly rated but properly repaid loan earns more for investors than an A rated loan).
-# First, we can take a quick view on differences in interest rate, loan amount, 
+# First, we can take a quick view on differences in interest rate, loan amount,
 #  and grade of the loan by target
-print(data.groupby('target')['int_rate'].mean())
-print(data.groupby('target')['loan_amnt'].mean())
-print(data.groupby('target')['grade'].value_counts(normalize=True).sort_index(level='grade'))
+print(data.groupby("target")["int_rate"].mean())
+print(data.groupby("target")["loan_amnt"].mean())
+print(
+    data.groupby("target")["grade"]
+    .value_counts(normalize=True)
+    .sort_index(level="grade")
+)
 # We can see that interest rates are on average 3%points higher and the amount is
-#  also slightly higher (1000 US-$). 
+#  also slightly higher (1000 US-$).
 # However, we can also see that the percentage of being in lower grades is higher for loans that have risks
 
 
 # Second we can take a look at grade: as suggested above, the interest rate is directly derived from grade
-print(data.groupby('grade')['int_rate'].mean())
+print(data.groupby("grade")["int_rate"].mean())
 
 # The differences are large, to increase returns it might be better to abstain
 #  from highest grades
-print(data.groupby('grade')['loan_amnt'].mean())
-# Grade is also related clearly to loan amount, indicating we might get more 
+print(data.groupby("grade")["loan_amnt"].mean())
+# Grade is also related clearly to loan amount, indicating we might get more
 #  return from lower scored grades since the amount is higher and as shown above
 #  the interest rate is higher
 
-# Second we can look at observations that are still good with their payments 
-#  (main criteria) and how interest rates, amounts look in these cases. 
+# Second we can look at observations that are still good with their payments
+#  (main criteria) and how interest rates, amounts look in these cases.
 # Filter loans that are fully paid
-paid_loans = data.loc[data['target'] == 0]
+paid_loans = data.loc[data["target"] == 0]
 
 # Compare average interest rates by grade and convert to DataFrame
-avg_interest_by_grade = paid_loans.groupby('grade')['int_rate'].mean()
+avg_interest_by_grade = paid_loans.groupby("grade")["int_rate"].mean()
 
 # Find lower-grade loans with high interest rates
 important_loans = paid_loans[
-    (paid_loans['grade'].isin([0, 1, 2])) &
-    (paid_loans['int_rate'] > avg_interest_by_grade.mean()) 
+    (paid_loans["grade"].isin([0, 1, 2]))
+    & (paid_loans["int_rate"] > avg_interest_by_grade.mean())
 ]
 
 # Review important loans
-print(important_loans[
-    ['grade', 'int_rate', 'loan_amnt', 'term']
-    ].sort_values(by = ['int_rate', 'loan_amnt'], ascending = False).head(20))
+print(
+    important_loans[["grade", "int_rate", "loan_amnt", "term"]]
+    .sort_values(by=["int_rate", "loan_amnt"], ascending=False)
+    .head(20)
+)
 
-# We can see that the ones with highest interest rate and loan_amt graded by 0, 
+# We can see that the ones with highest interest rate and loan_amt graded by 0,
 # but are still in payment plans, which means with these we would get a better
 # return.
 
@@ -192,7 +213,7 @@ from scipy.stats import chi2_contingency
 
 print(data.term.value_counts())
 print(data.application_type.value_counts())
-# dichotom: term, application type 
+# dichotom: term, application type
 
 print(data.emp_length.value_counts())
 print(data.home_ownership.value_counts())
@@ -204,89 +225,77 @@ print(data.purpose.value_counts())
 # checking statistical relationship to target
 
 # term
-stat, p = chi2_contingency(
-    pd.crosstab(
-        data["target"], 
-        data["term"]
-    )
-)[:2]
+stat, p = chi2_contingency(pd.crosstab(data["target"], data["term"]))[:2]
 
-V_Cramer = np.sqrt(
-    stat/pd.crosstab(data["target"],
-    data["term"]
-    ).values.sum())
+V_Cramer = np.sqrt(stat / pd.crosstab(data["target"], data["term"]).values.sum())
 
-print('V Cramer is: ', V_Cramer)
-print('p value is: ', round(p, 5))
+print("V Cramer is: ", V_Cramer)
+print("p value is: ", round(p, 5))
 # variable is relevant and need to be kept1
 
 # application_type
-stat, p = chi2_contingency(
-    pd.crosstab(
-        data["target"], 
-        data["application_type"]
-    )
-)[:2]
+stat, p = chi2_contingency(pd.crosstab(data["target"], data["application_type"]))[:2]
 
 V_Cramer = np.sqrt(
-    stat/pd.crosstab(data["target"],
-    data["application_type"]
-    ).values.sum())
+    stat / pd.crosstab(data["target"], data["application_type"]).values.sum()
+)
 
-print('V Cramer is: ', V_Cramer)
-print('p value is: ', round(p, 5))
+print("V Cramer is: ", V_Cramer)
+print("p value is: ", round(p, 5))
 # variable is not relevant and can be deleted
 
 # categorical polytom variables:
-for column in ['emp_length', 'home_ownership', 'verification_status', 'purpose']: 
+for column in ["emp_length", "home_ownership", "verification_status", "purpose"]:
     for i in pd.get_dummies(data[column]):
-        
         # Chi-Square test
         stat, p = chi2_contingency(
-            pd.crosstab(
-                data["target"], 
-                pd.get_dummies(data[column])[i]
-            )
+            pd.crosstab(data["target"], pd.get_dummies(data[column])[i])
         )[:2]
 
         # Cramer's V
         V_Cramer = np.sqrt(
-            stat/pd.crosstab(
-                data["target"], 
-                data[column]
-            ).values.sum()
+            stat / pd.crosstab(data["target"], data[column]).values.sum()
         )
-        
+
         # Only significant variables with a Cramer's V greater than 0.1 are displayed.
-        if ((p < 0.05)):
-            if ((V_Cramer > 0.1)):
-                print(column, i, V_Cramer, 'PASSED significance & relevance.')
+        if p < 0.05:
+            if V_Cramer > 0.1:
+                print(column, i, V_Cramer, "PASSED significance & relevance.")
             else:
-                print(column, i, 'has not reached relevance')
+                print(column, i, "has not reached relevance")
         else:
-            print(column, i, 'has not reached significance.')
+            print(column, i, "has not reached significance.")
 
 # none of the four polytom categorical ariables has reached statistical significance (p< 0.05) and
-# relevance (Cramers V>0.1), therefore, I delete all of them. 
+# relevance (Cramers V>0.1), therefore, I delete all of them.
 # furthermore, I decided to delete application_type since both, cramer's V and significance are again above thresholds
 
-data.drop(columns=['application_type', 'emp_length', 'home_ownership', 'verification_status', 'purpose'], axis=1, inplace=True)
+data.drop(
+    columns=[
+        "application_type",
+        "emp_length",
+        "home_ownership",
+        "verification_status",
+        "purpose",
+    ],
+    axis=1,
+    inplace=True,
+)
 
-# Continuous variables 
+# Continuous variables
 
-# First we check correlation between explanatory variables. We already know that grade and int_rate correlate high, 
-# since the later is built up on the first. 
+# First we check correlation between explanatory variables. We already know that grade and int_rate correlate high,
+# since the later is built up on the first.
 # We check if there is more high correlations and then eliminate.
-num_vars = data.select_dtypes(include='number')
-target = num_vars['target']
+num_vars = data.select_dtypes(include="number")
+target = num_vars["target"]
 
 # delete target and id variable from numerical df
-num_vars = num_vars.drop(columns=['id','target'], axis=1)
+num_vars = num_vars.drop(columns=["id", "target"], axis=1)
 
 
-sns.heatmap(data=num_vars.corr(), annot=True, cmap = 'rainbow')
-plt.show();
-
+sns.heatmap(data=num_vars.corr(), annot=True, cmap="rainbow")
+plt.show()
 # We see the following risky correlations:
 # - grade and int_rate (as already assumed)
 # - loan_amnt correlates high with installment and total_pymnt; also total_pymnt correaltes high with installment
@@ -306,17 +315,17 @@ import statsmodels.api as sm
 from statsmodels.formula.api import ols
 from statsmodels.stats.api import anova_lm
 
-attributes = data[['installment', 'loan_amnt']]
+attributes = data[["installment", "loan_amnt"]]
 results = {}
 feat_select = []
 
-for i in attributes : 
-    lm = ols('target ~ {}'.format(i), data = data).fit()
+for i in attributes:
+    lm = ols("target ~ {}".format(i), data=data).fit()
     table = anova_lm(lm)
-    liste_p_value = table['PR(>F)'].iloc[:1].to_list()
+    liste_p_value = table["PR(>F)"].iloc[:1].to_list()
     results[i] = liste_p_value
-    
-    if liste_p_value[0] <= 0.5 :
+
+    if liste_p_value[0] <= 0.5:
         feat_select.append(i)
 results
 
@@ -326,14 +335,14 @@ results
 # ordered one as grade
 
 # next_pymnt_d does not exist
-data.drop(columns=['total_pymnt', 'grade', 'installment'], axis=1, inplace=True)
+data.drop(columns=["total_pymnt", "grade", "installment"], axis=1, inplace=True)
 data.info()
 
 # delete id variable
-data.drop(columns=['id'], axis=1, inplace=True)
+data.drop(columns=["id"], axis=1, inplace=True)
 
-#save cleaned file
-data.to_csv('data-cleaned.csv', index=False)
+# save cleaned file
+data.to_csv("data-cleaned.csv", index=False)
 
 # We begin the modeling process by:
 
@@ -348,73 +357,89 @@ data.to_csv('data-cleaned.csv', index=False)
 from sklearn.model_selection import train_test_split
 
 # First i split training and test set, so that there is no information leak in pre-processing steps.
-X = data.drop(columns='target', axis=1)
-y = data['target']
+X = data.drop(columns="target", axis=1)
+y = data["target"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+
 # checking distribution of quantitative variables, for choosing right scaling.
 def var_quant_anal(variable, base):
-    print(base[variable].describe(), end='\n\n')
+    print(base[variable].describe(), end="\n\n")
     plt.figure()
     sns.displot(data=base, x=variable)
-    plt.title(f'Distribution of {variable} \n', fontsize=20)
+    plt.title(f"Distribution of {variable} \n", fontsize=20)
     plt.show()
 
-var_quant_anal('loan_amnt', X_train)
 
-var_quant_anal('int_rate', X_train)
+var_quant_anal("loan_amnt", X_train)
 
-var_quant_anal('annual_inc', X_train)
+var_quant_anal("int_rate", X_train)
 
-var_quant_anal('delinq_2yrs', X_train)
+var_quant_anal("annual_inc", X_train)
 
-var_quant_anal('fico_range_high', X_train)
+var_quant_anal("delinq_2yrs", X_train)
 
-var_quant_anal('open_acc', X_train)
+var_quant_anal("fico_range_high", X_train)
 
-var_quant_anal('acc_now_delinq', X_train)
+var_quant_anal("open_acc", X_train)
 
-var_quant_anal('bc_util', X_train)
+var_quant_anal("acc_now_delinq", X_train)
 
-var_quant_anal('total_bal_ex_mort', X_train)
+var_quant_anal("bc_util", X_train)
 
-var_quant_anal('total_bc_limit', X_train)
+var_quant_anal("total_bal_ex_mort", X_train)
+
+var_quant_anal("total_bc_limit", X_train)
 
 # MinMax: loan_amnt, fico_range_high (skewed), int_rate (slightly skewed), bc_util
-# Standard: 
+# Standard:
 # Robust: Annual_inc (outliers), delinq_2yrs (extreme outliers), open_acc (outliers), acc_now_delinq (outliers),
-#. total_bal_ex_mort (outliers), total_bc_limit (outliers)
+# . total_bal_ex_mort (outliers), total_bc_limit (outliers)
 
 # if i had more time, i woudl invest more time to explore the outliers/extreme values.
 
 from sklearn.preprocessing import MinMaxScaler, RobustScaler
 from sklearn.compose import ColumnTransformer
 
-to_robust = ['annual_inc', 'delinq_2yrs', 'open_acc', 'acc_now_delinq', 'total_bal_ex_mort', 'total_bc_limit']
-to_minmax = ['loan_amnt', 'fico_range_high', 'int_rate', 'bc_util']
+to_robust = [
+    "annual_inc",
+    "delinq_2yrs",
+    "open_acc",
+    "acc_now_delinq",
+    "total_bal_ex_mort",
+    "total_bc_limit",
+]
+to_minmax = ["loan_amnt", "fico_range_high", "int_rate", "bc_util"]
 
 # using column transformer to the the step at the same time.
 preprocessing = ColumnTransformer(
     transformers=[
-        ('robust_scaler', RobustScaler(), to_robust),
-        ('minmax_scaler', MinMaxScaler(), to_minmax)
+        ("robust_scaler", RobustScaler(), to_robust),
+        ("minmax_scaler", MinMaxScaler(), to_minmax),
     ],
-    remainder='passthrough'
+    remainder="passthrough",
 )
 
 # take it to the data frame
 X_train_scaled = preprocessing.fit_transform(X_train)
 
 # take it back to data frame
-scaled_columns = to_robust + to_minmax + [col for col in X_train.columns if col not in (to_robust + to_minmax)]
+scaled_columns = (
+    to_robust
+    + to_minmax
+    + [col for col in X_train.columns if col not in (to_robust + to_minmax)]
+)
 X_train_scaled = pd.DataFrame(X_train_scaled, columns=scaled_columns)
 X_train_scaled.term.value_counts()
 
-dummies = pd.get_dummies(X_train_scaled['term'])
+dummies = pd.get_dummies(X_train_scaled["term"])
 
-X_train_scaled = pd.concat([X_train_scaled, dummies.iloc[:, 0].rename('term_36m')], axis=1)
+X_train_scaled = pd.concat(
+    [X_train_scaled, dummies.iloc[:, 0].rename("term_36m")], axis=1
+)
 
-X_train_scaled.drop(columns='term', axis=1, inplace=True)
+X_train_scaled.drop(columns="term", axis=1, inplace=True)
 
 # (t) Choose and justify a metric related to your strategy.
 
@@ -429,37 +454,50 @@ y_train.shape
 # We choose lazy predict to indicate good base models to choice and tune. Therefore, we run the scaling things also
 # on the test set.
 
-to_robust = ['annual_inc', 'delinq_2yrs', 'open_acc', 'acc_now_delinq', 'total_bal_ex_mort', 'total_bc_limit']
-to_minmax = ['loan_amnt', 'fico_range_high', 'int_rate', 'bc_util']
+to_robust = [
+    "annual_inc",
+    "delinq_2yrs",
+    "open_acc",
+    "acc_now_delinq",
+    "total_bal_ex_mort",
+    "total_bc_limit",
+]
+to_minmax = ["loan_amnt", "fico_range_high", "int_rate", "bc_util"]
 
 # using column transformer to the the step at the same time.
 preprocessing = ColumnTransformer(
     transformers=[
-        ('robust_scaler', RobustScaler(), to_robust),
-        ('minmax_scaler', MinMaxScaler(), to_minmax)
+        ("robust_scaler", RobustScaler(), to_robust),
+        ("minmax_scaler", MinMaxScaler(), to_minmax),
     ],
-    remainder='passthrough'
+    remainder="passthrough",
 )
 
 # take it to the data frame
 X_test_scaled = preprocessing.fit_transform(X_test)
 
 # take it back to data frame
-scaled_columns = to_robust + to_minmax + [col for col in X_test.columns if col not in (to_robust + to_minmax)]
+scaled_columns = (
+    to_robust
+    + to_minmax
+    + [col for col in X_test.columns if col not in (to_robust + to_minmax)]
+)
 X_test_scaled = pd.DataFrame(X_test_scaled, columns=scaled_columns)
 
-dummies = pd.get_dummies(X_test_scaled['term'])
+dummies = pd.get_dummies(X_test_scaled["term"])
 
-X_test_scaled = pd.concat([X_test_scaled, dummies.iloc[:, 0].rename('term_36m')], axis=1)
+X_test_scaled = pd.concat(
+    [X_test_scaled, dummies.iloc[:, 0].rename("term_36m")], axis=1
+)
 
-X_test_scaled.drop(columns='term', axis=1, inplace=True)
+X_test_scaled.drop(columns="term", axis=1, inplace=True)
 ## Error we cannot use lazypredict, since it is not installed :-(
 # it's a pity, since I understood this is good to identify base models to use for model optimization
 
 from lazypredict.Supervised import LazyClassifier
 
-clf = LazyClassifier(verbose=0,ignore_warnings=True, custom_metric=None)
-models,predictions = clf.fit(X_train_scaled, X_test_scaled, y_train, y_test)
+clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
+models, predictions = clf.fit(X_train_scaled, X_test_scaled, y_train, y_test)
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_validate
@@ -469,23 +507,33 @@ logistic = LogisticRegression()
 
 skf = StratifiedKFold(n_splits=5)
 
-cross_validate(logistic, X_train_scaled, y_train, cv=skf, scoring=(
-    'accuracy', 'precision', 'recall', 'f1'))
+cross_validate(
+    logistic,
+    X_train_scaled,
+    y_train,
+    cv=skf,
+    scoring=("accuracy", "precision", "recall", "f1"),
+)
 
 # From above, we can see that the accuracy score for the logistic regression is good, and from the other scores,
-# we can see that this relies on the high levels of putting into category 1. 
+# we can see that this relies on the high levels of putting into category 1.
 # All other scores indicate bad fit
 from sklearn.svm import SVC
 
-svcl = SVC(gamma=0.01,  kernel='poly')
+svcl = SVC(gamma=0.01, kernel="poly")
 
 # splitting train set
 skf = StratifiedKFold(n_splits=5)
 
 svcl.fit(X_train_scaled, y_train)
 
-cross_validate(svcl, X_train_scaled, y_train, cv=skf, scoring=(
-    'accuracy', 'precision', 'recall', 'f1'))
+cross_validate(
+    svcl,
+    X_train_scaled,
+    y_train,
+    cv=skf,
+    scoring=("accuracy", "precision", "recall", "f1"),
+)
 from sklearn.ensemble import RandomForestClassifier
 
 rfc = RandomForestClassifier(n_jobs=-1, random_state=321)
@@ -495,14 +543,19 @@ skf = StratifiedKFold(n_splits=5)
 
 rfc.fit(X_train_scaled, y_train)
 
-cross_validate(rfc, X_train_scaled, y_train, cv=skf, scoring=(
-    'accuracy', 'precision', 'recall', 'f1'))
+cross_validate(
+    rfc,
+    X_train_scaled,
+    y_train,
+    cv=skf,
+    scoring=("accuracy", "precision", "recall", "f1"),
+)
 
 # This didn't run through in time
 
 # We can see that logistic regression does not predict well
 # however, it is recommended to use grid search or random search to optimize models
-# here i choose besides logistic regression, RandomForestClassifier and SVC 
+# here i choose besides logistic regression, RandomForestClassifier and SVC
 # I created a param grid based on the standard parameters from the training for the grid search
 # I run through each model and test each of the search algorithms
 # i run tests on model estimation and save these values (accuracy, f1_score, precision, and recall)
@@ -515,25 +568,38 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 models = {
-    'LogisticRegression': LogisticRegression(),
-    'RandomForestClassifier': RandomForestClassifier(),
-    'SVC': SVC()
+    "LogisticRegression": LogisticRegression(),
+    "RandomForestClassifier": RandomForestClassifier(),
+    "SVC": SVC(),
 }
 
 # Hyperparameters to be tested for each model
 param_grids = {
-    'LogisticRegression': {'C': [0.01, 0.1, 1, 10], 'solver': ['liblinear', 'lbfgs']},
-    'RandomForestClassifier': {'n_estimators': [50, 100, 200], 'max_depth': [10, 20, 30]},
-    'SVC': {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf']}
+    "LogisticRegression": {"C": [0.01, 0.1, 1, 10], "solver": ["liblinear", "lbfgs"]},
+    "RandomForestClassifier": {
+        "n_estimators": [50, 100, 200],
+        "max_depth": [10, 20, 30],
+    },
+    "SVC": {"C": [0.1, 1, 10], "kernel": ["linear", "rbf"]},
 }
 
 # Dictionary for storing results
 results = {}
 
+
 def compare_search_methods(model_name, model, param_grid):
     search_methods = {
-        'GridSearchCV': GridSearchCV(estimator=model, param_grid=param_grid, cv=5, scoring='accuracy'),
-        'RandomizedSearchCV': RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=5, cv=5, scoring='accuracy', random_state=42),
+        "GridSearchCV": GridSearchCV(
+            estimator=model, param_grid=param_grid, cv=5, scoring="accuracy"
+        ),
+        "RandomizedSearchCV": RandomizedSearchCV(
+            estimator=model,
+            param_distributions=param_grid,
+            n_iter=5,
+            cv=5,
+            scoring="accuracy",
+            random_state=42,
+        ),
     }
 
     results[model_name] = {}
@@ -541,28 +607,29 @@ def compare_search_methods(model_name, model, param_grid):
     for search_name, search in search_methods.items():
         # Perform hyperparameter search
         search.fit(X_train_scaled, y_train)
-        
+
         # Best score and hyperparameters found
         best_params = search.best_params_
         best_score = search.best_score_
-        
+
         # Test on test data
         y_pred = search.predict(X_test_scaled)
         test_accuracy = accuracy_score(y_test, y_pred)
         test_precision = precision_score(y_test, y_pred)
         test_f1 = f1_score(y_test, y_pred)
         test_recall = recall_score(y_test, y_pred)
-        
+
         # Store results
         results[model_name][search_name] = {
-            'best_params': best_params,
-            'best_cv_score': best_score,
-            'test_accuracy': test_accuracy,
-            'test_precision': test_precision,
-            'test_f1': test_f1,
-            'test_recall': test_recall
+            "best_params": best_params,
+            "best_cv_score": best_score,
+            "test_accuracy": test_accuracy,
+            "test_precision": test_precision,
+            "test_f1": test_f1,
+            "test_recall": test_recall,
         }
-        
+
+
 # Run comparison for each model
 for model_name, model in models.items():
     compare_search_methods(model_name, model, param_grids[model_name])
@@ -581,7 +648,7 @@ for model_name, model_results in results.items():
 
     print("\n")
 
-# If i had more time, due to the imbalanced data set, I would use Undersampling to make it 
+# If i had more time, due to the imbalanced data set, I would use Undersampling to make it
 # Resampling on the train base
 
 from imblearn.under_sampling import RandomUnderSampler

@@ -18,16 +18,25 @@ from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.models import Model
 
 from sklearn.model_selection import train_test_split
-column_names = ['MPG', 'Cylinders', 'Displacement', 'Horsepower', 'Weight',
-                'Acceleration', 'Model Year', 'Origin']
+
+column_names = [
+    "MPG",
+    "Cylinders",
+    "Displacement",
+    "Horsepower",
+    "Weight",
+    "Acceleration",
+    "Model Year",
+    "Origin",
+]
 
 dataset = pd.read_csv(
-    'auto-mpg.data', 
+    "auto-mpg.data",
     names=column_names,
-    na_values='?', 
-    comment='\t',
-    sep=' ',
-    skipinitialspace=True
+    na_values="?",
+    comment="\t",
+    sep=" ",
+    skipinitialspace=True,
 )
 
 # Display the first few lines of the dataset.
@@ -40,34 +49,34 @@ dataset.info()
 
 # There are 6 missing values in horsepower, we will impute them with the mode of horsepower
 
-dataset['Horsepower'] = np.where(
-    dataset['Horsepower'].isna(), dataset['Horsepower'].mode()[0], dataset['Horsepower']
+dataset["Horsepower"] = np.where(
+    dataset["Horsepower"].isna(), dataset["Horsepower"].mode()[0], dataset["Horsepower"]
 )
 # The "Origin" column is categorical, with index 1 corresponding to the USA, index 2 to Europe and index 3 to Japan. Transform this variable into 3 binary variables representing the origin of the vehicle for these regions of the world.
-dummies = pd.get_dummies(dataset['Origin'], prefix='Origin')
+dummies = pd.get_dummies(dataset["Origin"], prefix="Origin")
 
-dataset = pd.concat([dataset.drop(columns='Origin', axis=1), dummies], axis=1)
+dataset = pd.concat([dataset.drop(columns="Origin", axis=1), dummies], axis=1)
 
 dataset.head()
 
 # Data inspection and preprocessing
 
 # Using, for example, the pairplot or heatmap functions of seaborn, investigate the relationships between the variables in your dataset. What can you deduce from this in the context of our regression problem?
-sns.heatmap(dataset.corr(),annot=True, cmap="coolwarm", center=0)
+sns.heatmap(dataset.corr(), annot=True, cmap="coolwarm", center=0)
 
 # we can see probably problems since there are 3 highly correlated variables:
 # - cylinders, displacement, horsepower and weight
 
 # Study the distribution of variables in the dataset, why do you think a normalisation is necessary here?
-# Except for modelyear, acceleartion, none of the variables shows a normal distribution. However there are no 
+# Except for modelyear, acceleartion, none of the variables shows a normal distribution. However there are no
 # high outliers, but we see various local maxima for cylinders, displacement and horsepower
 # Min-Max-Scaling could solve this.
 
-sns.pairplot(data=dataset, diag_kind='kde')
+sns.pairplot(data=dataset, diag_kind="kde")
 
 # Separate the explanatory variables into a X dataframe and the target variable into y. Then apply a minmax normalisation to your dataset.
-X = dataset.drop('MPG', axis=1)
-y = dataset['MPG']
+X = dataset.drop("MPG", axis=1)
+y = dataset["MPG"]
 
 # We will do the scaling after train-test split to avoid data leakage
 
@@ -75,9 +84,12 @@ y = dataset['MPG']
 
 # Separate the dataset into training and test sets, the test set will contain 20% of the data.
 from sklearn.preprocessing import MinMaxScaler
+
 scaler = MinMaxScaler()
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=7786)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=7786
+)
 
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
@@ -100,7 +112,7 @@ X_test_scaled = scaler.transform(X_test)
 
 inputs = Input(shape=(9,), name="Input")
 
-dense1 = Dense(units=1, activation="tanh", name = "Layer_1")
+dense1 = Dense(units=1, activation="tanh", name="Layer_1")
 
 outputs = dense1(inputs)
 
@@ -114,7 +126,7 @@ linear_model.summary()
 linear_model.compile(
     loss="mean_absolute_error",
     optimizer=tf.optimizers.Adam(learning_rate=0.1),
-    metrics=["accuracy"]
+    metrics=["accuracy"],
 )
 
 # Train the model on X_train and y_train using the fit method with the parameters: epochs=100, batch_size=32 and validation_split=0.2.
@@ -122,24 +134,22 @@ linear_model.compile(
 # Store the training history in a linear_history variable.
 
 linear_history = linear_model.fit(
-    X_train_scaled,
-    y_train,
-    epochs=100,
-    batch_size=32,
-    validation_split=0.2
+    X_train_scaled, y_train, epochs=100, batch_size=32, validation_split=0.2
 )
 
 print(linear_history.history.keys())
 
 # The keys are present, howver, they are not plotted
 
+
 def plot_loss(history):
-    plt.plot(history.history['loss'], label='loss')
-    plt.plot(history.history['val_loss'], label='val_loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Error [MPG]')
+    plt.plot(history.history["loss"], label="loss")
+    plt.plot(history.history["val_loss"], label="val_loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Error [MPG]")
     plt.legend()
     plt.grid(True)
+
 
 plot_loss(linear_history)
 
@@ -147,11 +157,11 @@ plot_loss(linear_history)
 
 test_results = {}
 
-test_results['linear_model'] = linear_model.evaluate(X_test, y_test, verbose = 0)
+test_results["linear_model"] = linear_model.evaluate(X_test, y_test, verbose=0)
 # Correcting to just take the MAE value for the later task
 test_results2 = {}
 
-test_results2['linear_model'] = linear_model.evaluate(X_test, y_test, verbose = 0)[1]
+test_results2["linear_model"] = linear_model.evaluate(X_test, y_test, verbose=0)[1]
 
 # Second model
 
@@ -171,9 +181,9 @@ test_results2['linear_model'] = linear_model.evaluate(X_test, y_test, verbose = 
 
 inputs = Input(shape=(9,), name="Input")
 
-dense1 = Dense(units=64, activation="relu", name = "Layer_1")
-dense2 = Dense(units=64, activation="relu", name = "Layer_2")
-dense3 = Dense(units=1, activation="relu", name = "Layer_3")
+dense1 = Dense(units=64, activation="relu", name="Layer_1")
+dense2 = Dense(units=64, activation="relu", name="Layer_2")
+dense3 = Dense(units=1, activation="relu", name="Layer_3")
 
 x = dense1(inputs)
 x = dense2(x)
@@ -187,30 +197,26 @@ dnn_model.summary()
 dnn_model.compile(
     loss="mean_absolute_error",
     optimizer=tf.optimizers.Adam(learning_rate=0.001),
-    metrics=["accuracy"]
+    metrics=["accuracy"],
 )
 
 dnn_history = dnn_model.fit(
-    X_train_scaled,
-    y_train,
-    epochs=100,
-    batch_size=32,
-    validation_split=0.2
+    X_train_scaled, y_train, epochs=100, batch_size=32, validation_split=0.2
 )
 
 # Let's retrieve the results with the following line of code.
 
-test_results['dnn_model'] = dnn_model.evaluate(X_test, y_test, verbose=0)[1]
+test_results["dnn_model"] = dnn_model.evaluate(X_test, y_test, verbose=0)[1]
 
 # Performance
 
 # Let's compare the performance of the linear model and the neural network.
 
-pd.DataFrame(test_results, index=['Mean absolute error [MPG]']).T
+pd.DataFrame(test_results, index=["Mean absolute error [MPG]"]).T
 
 # How do you interpret these results?
 
-# Both values are 0.0 which. means they are perfectly accurate (I think), kind of a perfect model with no errors. 
+# Both values are 0.0 which. means they are perfectly accurate (I think), kind of a perfect model with no errors.
 # Probably this indicates a problem of overfitting
 
 # Prediction
@@ -219,10 +225,10 @@ pd.DataFrame(test_results, index=['Mean absolute error [MPG]']).T
 
 test_predictions = dnn_model.predict(X_test).flatten()
 
-a = plt.axes(aspect='equal')
+a = plt.axes(aspect="equal")
 plt.scatter(y_test, test_predictions)
-plt.xlabel('True Values [MPG]')
-plt.ylabel('Predictions [MPG]')
+plt.xlabel("True Values [MPG]")
+plt.ylabel("Predictions [MPG]")
 lims = [0, 50]
 plt.xlim(lims)
 plt.ylim(lims)
@@ -232,5 +238,5 @@ _ = plt.plot(lims, lims)
 
 error = test_predictions - y_test
 plt.hist(error, bins=25)
-plt.xlabel('Prediction Error [MPG]')
-_ = plt.ylabel('Count')
+plt.xlabel("Prediction Error [MPG]")
+_ = plt.ylabel("Count")

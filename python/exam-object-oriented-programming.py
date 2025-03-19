@@ -6,17 +6,19 @@
 
 # (c) Instantiate a first Drink object whose volume will be 350mL and whose expiration date is in 2 weeks.
 
+
 class Drink:
     def __init__(self, volume, expiration):
         self.volume = volume
         self.expiration = expiration
-        
+
     def next_day(self):
         if self.expiration > 0:
             self.expiration -= 1
-            print('The expiration date was updated (-1)')
+            print("The expiration date was updated (-1)")
         else:
-            print('The drink has already expired! :-(')
+            print("The drink has already expired! :-(")
+
 
 first_drink = Drink(350, 14)
 
@@ -29,25 +31,28 @@ first_drink.next_day()
 
 # (f) Instantiate an object of type Juice whose volume will be 1000mL and an object of type DataCola whith a can container.
 
+
 class Juice(Drink):
     def __init__(self, volume):
         self.volume = volume
         self.expiration = 7
-        
+
+
 class DataCola(Drink):
     def __init__(self, container):
-        if container == 'can':
+        if container == "can":
             self.volume = 330
             self.expiration = 60
-        elif container == 'bottle':
+        elif container == "bottle":
             self.volume = 500
             self.expiration = 30
         else:
-            raise ValueError('Container must be either can or bottle!')
-            
+            raise ValueError("Container must be either can or bottle!")
+
+
 suco = Juice(1000)
 
-coca = DataCola('can')
+coca = DataCola("can")
 
 # (g) Define a new VendingMachine class which will have two attributes:content which will be a list of objects of type Drink and size which corresponds to the number of drinks that the vending machine can contain at most.
 
@@ -59,45 +64,47 @@ coca = DataCola('can')
 
 # (k) Define in the VendingMachine class anext_day method which will reduce the number of days of conservation left for all the drinks in the dispenser (Vending Machine).
 
+
 class VendingMachine:
     def __init__(self, size):
         self.content = []
         self.size = size
-        
+
     def add_drink(self, drink):
         if isinstance(drink, Drink):
             if len(self.content) < self.size:
                 self.content.append(drink)
-                print('Drink is added!')
+                print("Drink is added!")
             else:
-                print('Vending Machine is full. Drink not added!')
+                print("Vending Machine is full. Drink not added!")
         else:
-            print('You can only use drinks of class Drink!')
-    
+            print("You can only use drinks of class Drink!")
+
     def remove_drink(self, i):
         if len(self.content) < i:
-            print('The list has only', len(self.content), 'items!')
+            print("The list has only", len(self.content), "items!")
         else:
             self.content.pop(i)
-            print('The', i, 'th item was removed!')
-            
+            print("The", i, "th item was removed!")
+
     def verify(self):
         for i, drink in enumerate(self.content):
-            if (drink.expiration <= 0):
+            if drink.expiration <= 0:
                 self.remove_drink(i)
             else:
-                print(i, 'th Drink is still good!')
-                
+                print(i, "th Drink is still good!")
+
     def next_day(self):
         for j, drink in enumerate(self.content):
-            if (drink.expiration > 0):
+            if drink.expiration > 0:
                 drink.expiration -= 1
-                print('Expiration date on item', j, 'was updated!')
+                print("Expiration date on item", j, "was updated!")
             else:
                 drink.pop(j)
-                print('The drink (', j, ') has already expired and was removed!')
-                
-# Tests        
+                print("The drink (", j, ") has already expired and was removed!")
+
+
+# Tests
 vending_machine = VendingMachine(3)
 
 cola_can = Drink(330, 3)
@@ -118,29 +125,31 @@ print(vending_machine.remove_drink(0))
 
 # (c) Define in the class Cell a method play2 which will give the value 'O' to the attribute occupied if the cell is not already occupied.
 
+
 class Cell:
     def __init__(self):
-        self.occupied = ' '
+        self.occupied = " "
         # I added this, since due to the occupied status it doesn't keep that
         # X plays, if s/he chose a cell that is occupied
         self.error = False
-        
+
     def play1(self):
-        if self.occupied == ' ':
-            self.occupied = 'X'
+        if self.occupied == " ":
+            self.occupied = "X"
         else:
             self.error = True
-            print('Cell is already occupied!')
+            print("Cell is already occupied!")
 
     def play2(self):
-        if self.occupied == ' ':
-            self.occupied = 'O'
+        if self.occupied == " ":
+            self.occupied = "O"
         else:
             self.error = True
-            print('Cell is already occupied!')
-            
+            print("Cell is already occupied!")
+
     def __str__(self):
         return self.occupied
+
 
 # (d) Define a Board class which has two attributes: grid and turn. The grid attribute is a 9-element list of objects of type Cell. The turn attribute is an integer which is equal to 1 if it is the turn of player 1 to play and 2 if it is the turn of player 2. The turn attribute will be automatically initialized with the value 1.
 
@@ -148,21 +157,22 @@ class Cell:
 
 # (f) Define in the Board class a play method which will take as a parameter an integer ranging from 0 to 8. Depending on the player whose turn it is to play, this method will call the play1 or play2 methods on the cell corresponding to the integer passed as argument. It will then be necessary to modify the value of the turn attribute so that the next player can play.
 
+
 class Board:
     def __init__(self):
         self.grid = [Cell() for _ in range(9)]
         self.turn = 1
-        
-    def __str__(self):
-        l1 = str(self.grid[0]) + '|' + str(self.grid[1]) + '|' + str(self.grid[2])
-        l2 = str(self.grid[3]) + '|' + str(self.grid[4]) + '|' + str(self.grid[5])
-        l3 = str(self.grid[6]) + '|' + str(self.grid[7]) + '|' + str(self.grid[8])
 
-        return l1 + '\n' + l2 + '\n' + l3
+    def __str__(self):
+        l1 = str(self.grid[0]) + "|" + str(self.grid[1]) + "|" + str(self.grid[2])
+        l2 = str(self.grid[3]) + "|" + str(self.grid[4]) + "|" + str(self.grid[5])
+        l3 = str(self.grid[6]) + "|" + str(self.grid[7]) + "|" + str(self.grid[8])
+
+        return l1 + "\n" + l2 + "\n" + l3
 
     def play(self, field: int):
-        assert field in range(0,8), 'The number input is out of range! Range: [0,8]'
-        if (self.turn % 2 == 0):
+        assert field in range(0, 8), "The number input is out of range! Range: [0,8]"
+        if self.turn % 2 == 0:
             self.grid[field].play2()
             # I added the print, so it is better to play
             print(self)
@@ -183,76 +193,93 @@ class Board:
 
     def endofgame(self, player):
         # Test if first row is full
-        if (str(self.grid[0]) == str(self.grid[1]) == str(self.grid[2])) & (str(self.grid[2]) != ' '):
+        if (str(self.grid[0]) == str(self.grid[1]) == str(self.grid[2])) & (
+            str(self.grid[2]) != " "
+        ):
             winner = self.grid[0]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if second row is full
-        elif (str(self.grid[3]) == str(self.grid[4]) == str(self.grid[5])) & (str(self.grid[5]) != ' '):
+        elif (str(self.grid[3]) == str(self.grid[4]) == str(self.grid[5])) & (
+            str(self.grid[5]) != " "
+        ):
             winner = self.grid[3]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if third row is full
-        elif (str(self.grid[6]) == str(self.grid[7]) == str(self.grid[8])) & (str(self.grid[8]) != ' '):
+        elif (str(self.grid[6]) == str(self.grid[7]) == str(self.grid[8])) & (
+            str(self.grid[8]) != " "
+        ):
             winner = self.grid[6]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if first column is full
-        elif (str(self.grid[0]) == str(self.grid[3]) == str(self.grid[6])) & (str(self.grid[6]) != ' '):
+        elif (str(self.grid[0]) == str(self.grid[3]) == str(self.grid[6])) & (
+            str(self.grid[6]) != " "
+        ):
             winner = self.grid[0]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if second column is full
-        elif (str(self.grid[1]) == str(self.grid[4]) == str(self.grid[7])) & (str(self.grid[7]) != ' '):
+        elif (str(self.grid[1]) == str(self.grid[4]) == str(self.grid[7])) & (
+            str(self.grid[7]) != " "
+        ):
             winner = self.grid[1]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if third column is full
-        elif (str(self.grid[2]) == str(self.grid[5]) == str(self.grid[8])) & (str(self.grid[8]) != ' '):
+        elif (str(self.grid[2]) == str(self.grid[5]) == str(self.grid[8])) & (
+            str(self.grid[8]) != " "
+        ):
             winner = self.grid[2]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if first diagonal is full
-        elif (str(self.grid[0]) == str(self.grid[4]) == str(self.grid[8])) & (str(self.grid[8]) != ' '):
+        elif (str(self.grid[0]) == str(self.grid[4]) == str(self.grid[8])) & (
+            str(self.grid[8]) != " "
+        ):
             winner = self.grid[1]
-            print('End of game!', winner, 'has won! Congrats!')
+            print("End of game!", winner, "has won! Congrats!")
         # Test if second diagonal is full
-        elif (str(self.grid[2]) == str(self.grid[4]) == str(self.grid[6])) & (str(self.grid[6]) != ' '):
+        elif (str(self.grid[2]) == str(self.grid[4]) == str(self.grid[6])) & (
+            str(self.grid[6]) != " "
+        ):
             winner = self.grid[2]
-            print('End of game!', winner, 'has won! Congrats!')
-        else: 
-            if (str(player) == 'X'):
-                print('Next turn from : O')
+            print("End of game!", winner, "has won! Congrats!")
+        else:
+            if str(player) == "X":
+                print("Next turn from : O")
             else:
-                print('Next turn from: X')
+                print("Next turn from: X")
+
 
 # (g) Write a series of instructions to obtain the following display:
-#    |   | O 
-#  X | X | X 
-#  O |   |   
+#    |   | O
+#  X | X | X
+#  O |   |
 
 board = Board()
 
 board.play(3)
-#  | | 
-# X| | 
-#  | | 
+#  | |
+# X| |
+#  | |
 # Next turn from : O
 
 board.play(2)
 #  | |O
-# X| | 
-#  | | 
+# X| |
+#  | |
 # Next turn from: X
 
 board.play(4)
 #  | |O
-# X|X| 
-#  | | 
+# X|X|
+#  | |
 # Next turn from : O
 
 board.play(6)
 #  | |O
-# X|X| 
-# O| | 
+# X|X|
+# O| |
 # Next turn from: X
 
 board.play(5)
 #  | |O
 # X|X|X
-# O| | 
+# O| |
 # End of game! X has won! Congrats!

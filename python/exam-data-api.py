@@ -85,11 +85,11 @@
 # (a) Using a GET request on the "https://examen-api.s3.eu-west-1.amazonaws.com/Students", retrieve the list of student IDs and store the result in a list named student_list.
 import requests
 
-response = requests.get('https://examen-api.s3.eu-west-1.amazonaws.com/Students')
+response = requests.get("https://examen-api.s3.eu-west-1.amazonaws.com/Students")
 
 response = response.json()
 
-student_list = response['StudentList']
+student_list = response["StudentList"]
 
 # (b) Define a function named extract_enrollments which will take as argument a list of learner IDs and return the following DataFrame:
 # CourseID	StudentID	StudentName	StudentCursus
@@ -137,10 +137,10 @@ courses = response["StudentCourses"]
 
 rows = [
     {
-        "StudentCourse": course, 
+        "StudentCourse": course,
         "StudentID": response["StudentID"],
-        "StudentName": response["StudentName"], 
-        "StudentCursus": response["StudentCursus"]
+        "StudentName": response["StudentName"],
+        "StudentCursus": response["StudentCursus"],
     }
     for course in courses
 ]
@@ -149,32 +149,33 @@ df = pd.DataFrame(rows)
 print(df)
 
 
-def extract_enrollments(learner_list): 
+def extract_enrollments(learner_list):
     all_rows = []
-    
+
     for learner_id in learner_list:
         source = f"https://examen-api.s3.eu-west-1.amazonaws.com/Student/{learner_id}"
         response = requests.get(source)
         response = response.json()
         courses = response["StudentCourses"]
-        
+
         rows = [
             {
-                "StudentCourse": course, 
+                "StudentCourse": course,
                 "StudentID": response["StudentID"],
-                "StudentName": response["StudentName"], 
-                "StudentCursus": response["StudentCursus"]
+                "StudentName": response["StudentName"],
+                "StudentCursus": response["StudentCursus"],
             }
             for course in courses
         ]
         all_rows.extend(rows)
-    
+
     return pd.DataFrame(all_rows)
+
 
 # (c) Execute the function extract_enrollments with the list student_list as an argument and store the result produced in a DataFrame named enrollments.
 # Insert your code here
 enrollments = extract_enrollments(student_list)
-    
+
 enrollments.head()
 
 # (d) Define a function named extract_attendances which will take as argument a list of learner IDs and return the following DataFrame:
@@ -208,48 +209,40 @@ response = response.json()
 response
 
 
-for event in response['StudentAttendance']:
+for event in response["StudentAttendance"]:
     course_id = int(list(event.keys())[0])
-    date = list(event.values()) 
-    
-    rows = [
-    {
-        "CourseID": course_id, 
-        "StudentID": learner_id,
-        "Date": date
-    }
-]
-    
+    date = list(event.values())
+
+    rows = [{"CourseID": course_id, "StudentID": learner_id, "Date": date}]
+
 df = pd.DataFrame(rows)
 
-df['CourseID'] = df["CourseID"].astype(int)
+df["CourseID"] = df["CourseID"].astype(int)
 
 df.head()
 
-def extract_enrollments(learner_list): 
+
+def extract_enrollments(learner_list):
     all_rows = []
-    
+
     for learner_id in learner_list:
-        source = f"https://examen-api.s3.eu-west-1.amazonaws.com/Attendance/{learner_id}"
+        source = (
+            f"https://examen-api.s3.eu-west-1.amazonaws.com/Attendance/{learner_id}"
+        )
         response = requests.get(source)
         response = response.json()
-        attendances = response['StudentAttendance']
-        
+        attendances = response["StudentAttendance"]
+
         for event in attendances:
             course_id = int(list(event.keys())[0])
             date = next(iter(event.values()))
-            
-            rows = [
-                {
-                    "CourseID": course_id, 
-                    "StudentID": learner_id,
-                    "Date": date
-                }
-            ]
-            
-        all_rows.extend(rows)        
-    
+
+            rows = [{"CourseID": course_id, "StudentID": learner_id, "Date": date}]
+
+        all_rows.extend(rows)
+
     return pd.DataFrame(all_rows)
+
 
 # (e) Execute the function extract_attendances with the list student_list as an argument and store the result produced in a DataFrame named attendances.
 attendances = extract_enrollments(student_list)
@@ -281,63 +274,53 @@ response = response.json()
 response
 
 
-for event in response['StudentGrades']:
+for event in response["StudentGrades"]:
     course_id = int(list(event.keys())[0])
     grade = next(iter(event.values()))
-    
-    rows = [
-    {
-        "CourseID": course_id, 
-        "StudentID": learner_id,
-        "Grade": grade
-    }
-]
-    
+
+    rows = [{"CourseID": course_id, "StudentID": learner_id, "Grade": grade}]
+
 df = pd.DataFrame(rows)
 
-df['CourseID'] = df["CourseID"].astype(int)
-df['Grade'] = df['Grade'].astype(float)
+df["CourseID"] = df["CourseID"].astype(int)
+df["Grade"] = df["Grade"].astype(float)
 
-df['Attended'] = df['Grade'] > 0
+df["Attended"] = df["Grade"] > 0
 
 # assuming success from 50% on
-df['Success'] = df['Grade'] >= 10
+df["Success"] = df["Grade"] >= 10
 
 
 df.info()
 
 response
 
-def extract_grades(learner_list): 
+
+def extract_grades(learner_list):
     all_rows = []
-    
+
     for learner_id in learner_list:
         source = f"https://examen-api.s3.eu-west-1.amazonaws.com/Grades/{learner_id}"
         response = requests.get(source)
         response = response.json()
-        grades = response['StudentGrades']
-        
+        grades = response["StudentGrades"]
+
         for event in grades:
             course_id = int(list(event.keys())[0])
             grade = next(iter(event.values()))
-            
-            rows = [
-                {
-                    "CourseID": course_id, 
-                    "StudentID": learner_id,
-                    "Grade": grade
-                }
-            ]
-            
+
+            rows = [{"CourseID": course_id, "StudentID": learner_id, "Grade": grade}]
+
         all_rows.extend(rows)
-        
+
         df = pd.DataFrame(all_rows)
-        df['CourseID'] = df['CourseID'].astype(int)
-        df['Grade'] = df['Grade'].astype(float)
-        df['Attended'] = df['Grade'] > 0
-        df['Success'] = df['Grade'] >= 10
-    
+        df["CourseID"] = df["CourseID"].astype(int)
+        df["Grade"] = df["Grade"].astype(float)
+        df["Attended"] = df["Grade"] > 0
+        df["Success"] = df["Grade"] >= 10
+
     return df
+
 
 # (g) Execute the function extract_grades with the list student_list as an argument and store the result produced in a DataFrame named grades.
 grades = extract_grades(student_list)
@@ -363,19 +346,24 @@ grades.head()
 # 4	4	71	DA
 # 5	5	75	DS
 
+
 def transform_enrollments(enrollments):
-    unique_students = enrollments.groupby('StudentCourse').size().reset_index(name='EnrolledStudents')
-    
-    mode_course = enrollments.groupby('StudentCourse')['StudentCursus'].agg(lambda x: x.mode()[0]).reset_index(name='MajorityCursus')
-    
-    result_df = pd.merge(unique_students, mode_course, on='StudentCourse')
-    
-    result_df = result_df.rename(
-        columns = {
-                'StudentCourse': 'CourseID'
-        }
+    unique_students = (
+        enrollments.groupby("StudentCourse").size().reset_index(name="EnrolledStudents")
     )
+
+    mode_course = (
+        enrollments.groupby("StudentCourse")["StudentCursus"]
+        .agg(lambda x: x.mode()[0])
+        .reset_index(name="MajorityCursus")
+    )
+
+    result_df = pd.merge(unique_students, mode_course, on="StudentCourse")
+
+    result_df = result_df.rename(columns={"StudentCourse": "CourseID"})
     return result_df
+
+
 transform_enrollments(enrollments)
 
 # (c) Define a function named transform_attendances which will take the DataFrame attendances as an argument and calculate the attendance rate at the sessions of each course. We will store the result in a column named "AttendanceRate".
@@ -397,18 +385,33 @@ transform_enrollments(enrollments)
 
 # Consider using the reset_index method to remove columns used for a groupby operation from the index.
 
-def transform_attendances(attendances):  
-    attended_sessions = attendances.groupby(['StudentID', 'CourseID'])['Date'].nunique().reset_index(name='SessionsAttended')
-    
-    total_sessions = attended_sessions.groupby('CourseID')['SessionsAttended'].sum().reset_index(name='TotalSessions')
-    
-    total_students = attended_sessions.groupby('CourseID')['StudentID'].count().reset_index(name='TotalStudents')
-    
-    total_sessions['AttendanceRate'] = total_sessions['TotalSessions'] / 10
-    
-    result_df = total_sessions[['CourseID', 'AttendanceRate']]
-    
+
+def transform_attendances(attendances):
+    attended_sessions = (
+        attendances.groupby(["StudentID", "CourseID"])["Date"]
+        .nunique()
+        .reset_index(name="SessionsAttended")
+    )
+
+    total_sessions = (
+        attended_sessions.groupby("CourseID")["SessionsAttended"]
+        .sum()
+        .reset_index(name="TotalSessions")
+    )
+
+    total_students = (
+        attended_sessions.groupby("CourseID")["StudentID"]
+        .count()
+        .reset_index(name="TotalStudents")
+    )
+
+    total_sessions["AttendanceRate"] = total_sessions["TotalSessions"] / 10
+
+    result_df = total_sessions[["CourseID", "AttendanceRate"]]
+
     return result_df
+
+
 transform_attendances(attendances)
 
 # (e) Define a function named transform_grades which will take the DataFrame grades as an argument and calculate the following KPIs:
@@ -431,19 +434,26 @@ transform_attendances(attendances)
 
 # To calculate the average for the exam, for each course, we can first calculate the sum of the marks then divide this sum by the number of students present at the exam.
 
+
 def transform_grade(grades):
-    grouped = grades.groupby('CourseID').agg(
-        ExamAttendanceRate=('Attended', 'mean'),
-        ExamSuccessRate=('Success', 'mean'),
-        TotalGrades=('Grade', 'sum'),
-        TotalAttendees=('Attended', 'sum')
-    ).reset_index()
-    
-    grouped['ExamAverage'] = grouped['TotalGrades'] / grouped['TotalAttendees']
-    
-    grouped = grouped.drop(columns=['TotalGrades', 'TotalAttendees'])
-    
+    grouped = (
+        grades.groupby("CourseID")
+        .agg(
+            ExamAttendanceRate=("Attended", "mean"),
+            ExamSuccessRate=("Success", "mean"),
+            TotalGrades=("Grade", "sum"),
+            TotalAttendees=("Attended", "sum"),
+        )
+        .reset_index()
+    )
+
+    grouped["ExamAverage"] = grouped["TotalGrades"] / grouped["TotalAttendees"]
+
+    grouped = grouped.drop(columns=["TotalGrades", "TotalAttendees"])
+
     return grouped
+
+
 transform_grade(grades)
 
 # (g) Using the functions defined previously, perform a merge to obtain the following DataFrame:
@@ -460,6 +470,5 @@ df1 = transform_enrollments(enrollments)
 df2 = transform_attendances(attendances)
 df3 = transform_grade(grades)
 
-final_df = df1.merge(df2.merge(df3, on='CourseID'), on='CourseID')
+final_df = df1.merge(df2.merge(df3, on="CourseID"), on="CourseID")
 final_df.head()
-
